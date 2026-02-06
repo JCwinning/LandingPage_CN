@@ -6450,7 +6450,7 @@ font-style: inherit;">&gt;</span> .env</span></code></pre></div></div>
 <section id="带位置选择的交互式地图" class="level3">
 <h3 class="anchored" data-anchor-id="带位置选择的交互式地图">1. 带位置选择的交互式地图</h3>
 <p>地图功能允许用户点击任意位置并获取该地点的实时天气数据：</p>
-<div id="c34f4570" class="cell" data-execution_count="1">
+<div id="e719b45f" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;
@@ -6580,7 +6580,7 @@ font-style: inherit;">=</span> (lat, lon)</span>
 <section id="双语城市搜索系统" class="level3">
 <h3 class="anchored" data-anchor-id="双语城市搜索系统">2. 双语城市搜索系统</h3>
 <p>此应用支持中英文城市名称，并具备智能的回退机制：</p>
-<div id="7351a659" class="cell" data-execution_count="2">
+<div id="bb7ce36c" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="im" style="color: #00769E;
@@ -6748,7 +6748,7 @@ font-style: inherit;">None</span></span></code></pre></div></div>
 <section id="天气数据集成" class="level3">
 <h3 class="anchored" data-anchor-id="天气数据集成">3. 天气数据集成</h3>
 <p>该应用程序从 Open-Meteo API 获取全面的天气数据：</p>
-<div id="b210aad4" class="cell" data-execution_count="3">
+<div id="d8752498" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="im" style="color: #00769E;
@@ -7006,7 +7006,7 @@ font-style: inherit;">return</span> df</span></code></pre></div></div>
 <section id="高级数据可视化" class="level3">
 <h3 class="anchored" data-anchor-id="高级数据可视化">4. 高级数据可视化</h3>
 <p>温度趋势图，清晰地区分了历史数据和预报数据：</p>
-<div id="21a467a5" class="cell" data-execution_count="4">
+<div id="3d7325f3" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><span class="im" style="color: #00769E;
@@ -7219,7 +7219,7 @@ font-style: inherit;">'independent'</span>)</span></code></pre></div></div>
 <section id="空气质量监测" class="level3">
 <h3 class="anchored" data-anchor-id="空气质量监测">5. 空气质量监测</h3>
 <p>符合 EPA 标准的 PM2.5 水平颜色编码：</p>
-<div id="1936eb5a" class="cell" data-execution_count="5">
+<div id="bdf36778" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="kw" style="color: #003B4F;
@@ -7527,7 +7527,7 @@ font-style: inherit;">True</span>)</span></code></pre></div></div>
 <figcaption>AI 天气分析建议</figcaption>
 </figure>
 </div>
-<div id="bdfefd0e" class="cell" data-execution_count="6">
+<div id="aa6bb07f" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="im" style="color: #00769E;
@@ -7996,7 +7996,7 @@ font-style: inherit;">"请先获取天气数据。"</span>)</span></code></pre><
 <section id="语言管理架构" class="level3">
 <h3 class="anchored" data-anchor-id="语言管理架构">语言管理架构</h3>
 <p>应用实现了一个全面的双语系统：</p>
-<div id="7ba005a3" class="cell" data-execution_count="7">
+<div id="f544aa0c" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><span class="co" style="color: #5E5E5E;
@@ -8232,7 +8232,7 @@ font-style: inherit;">"sidebar_header"</span>, language))</span></code></pre></d
 <section id="带视觉指示的天气数据表" class="level3">
 <h3 class="anchored" data-anchor-id="带视觉指示的天气数据表">带视觉指示的天气数据表</h3>
 <p>天气表结合了数据与视觉元素，方便用户快速理解：</p>
-<div id="8d02fc18" class="cell" data-execution_count="8">
+<div id="16638b34" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><span class="kw" style="color: #003B4F;
@@ -8809,7 +8809,7 @@ font-style: inherit;">return</span> create_interactive_map(lat, lon)</span></cod
 </section>
 <section id="错误处理与容错" class="level3">
 <h3 class="anchored" data-anchor-id="错误处理与容错">错误处理与容错</h3>
-<div id="1817e4bd" class="cell" data-execution_count="9">
+<div id="b57baa86" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="kw" style="color: #003B4F;
