@@ -2,6 +2,7 @@
   {
     "listing": "/posts.html",
     "items": [
+      "/posts/AI_milktea/index.html",
       "/posts/mcdonald_mcp/index.html",
       "/posts/AI judge/index.html",
       "/posts/ARS/index.html",
@@ -20,6 +21,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/AI_milktea/index.html",
       "/posts/mcdonald_mcp/index.html",
       "/posts/AI judge/index.html",
       "/posts/ARS/index.html",
