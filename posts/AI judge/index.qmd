@@ -14,27 +14,27 @@ execute:
 ---
 
 
-AI judge AI workflow process using 3 method:**LangGraph** and **LangChain (LCEL)**,**n8n** :
+使用三种方法实现 AI 裁判 (AI Judge) 的 AI 工作流过程：**LangGraph**、**LangChain (LCEL)** 和 **n8n**：
 
 -   
 
-    1.  **User Input**: Ask a question.
+    1.  **用户输入**：提出一个问题。
 
 -   
 
-    2.  **Model A**: Generate an answer
+    2.  **模型 A**：生成一个回答。
 
 -   
 
-    3.  **Model B**: Generate an answer
+    3.  **模型 B**：生成一个回答。
 
 -   
 
-    4.  **Model C**: Generate an answer
+    4.  **模型 C**：生成一个回答。
 
 -   
 
-    5.  **Judge**: Compare all three answers and provide a score (0-100) and commentary.
+    5.  **裁判 (Judge)**：对比这三个回答，并提供评分（0-100）和评语。
 
 ```{mermaid}
 graph TD
@@ -50,9 +50,9 @@ graph TD
 ::: panel-tabset
 # LangGraph
 
-## 1. Setup and Environment
+## 1. 设置与环境
 
-First, we need to import necessary libraries and load our API key. We ensure that `openrouter` is available in our environment.
+首先，我们需要导入必要的库并加载 API 密钥。我们确保环境中可以使用 openrouter。
 
 ```{python}
 import os
@@ -70,9 +70,9 @@ else:
     print("API Key loaded successfully.")
 ```
 
-## 2. Initialize the Model Client
+## 2. 初始化模型客户端
 
-We will use the standard `openai` Python client but point it to OpenRouter.
+我们将使用标准的 openai Python 客户端，但将其指向 OpenRouter。
 
 ```{python}
 from openai import OpenAI
@@ -103,9 +103,9 @@ def query_model(model_name: str, prompt: str, system_prompt: str = None) -> str:
         return f"Error calling {model_name}: {e}"
 ```
 
-## 3. Define the State
+## 3. 定义状态 (State)
 
-In LangGraph, the **State** is a shared data structure passed between nodes. Here, our state tracks the question, both answers, and the final judgment.
+在 LangGraph 中，**状态 (State)** 是在节点之间传递的共享数据结构。在这里，我们的状态跟踪问题、所有回答以及最终的评判结果。
 
 ```{python}
 class JudgeState(TypedDict):
@@ -116,9 +116,9 @@ class JudgeState(TypedDict):
     judgment: str
 ```
 
-## 4. Define the Nodes
+## 4. 定义节点 (Nodes)
 
-We define four key nodes for our graph: 1. **Model A Node**: Answers the question. 2. **Model B Node**: Answers the same question. 3. **Model C Node**: Answers the same question. 4. **Judge Node**: Reviews the question and all three answers without knowing the model names.
+我们为图定义了四个关键节点：1. **模型 A 节点**：回答问题。2. **模型 B 节点**：回答同一个问题。3. **模型 C 节点**：回答同一个问题。4. **裁判节点**：在不知道模型名称的情况下，审核问题和所有三个回答。
 
 ```{python}
 # Models
@@ -190,9 +190,9 @@ def node_judge(state: JudgeState) -> JudgeState:
     return {"judgment": judgment}
 ```
 
-## 5. Build the Graph
+## 5. 构建图 (Graph)
 
-Now we assemble the graph by adding nodes and defining the flow (Edges). Model A, Model B, and Model C will run **independently and in parallel**, followed by the Judge.
+现在我们通过添加节点和定义流（边 Edges）来组装图。模型 A、模型 B 和模型 C 将**独立且并行**运行，然后由裁判进行评判。
 
 ```{python}
 from langgraph.graph import START
@@ -218,9 +218,9 @@ workflow.add_edge("judge", END)
 app = workflow.compile()
 ```
 
-## 6. Execution
+## 6. 执行
 
-Finally, we run the workflow with a sample question.
+最后，我们使用一个示例问题运行该工作流。
 
 ```{python}
 #| output: true
@@ -241,7 +241,7 @@ print(f"QUESTION: {result['question']}")
 print("="*40)
 ```
 
-### Model A
+### 模型 A
 
 
 
@@ -251,7 +251,7 @@ print(f"\n[Model A ]:\n{result.get('answer_a', 'No response')}")
 
 ```
 
-### Model B
+### 模型 B
 
 ```{python}
 print(MODEL_B)
@@ -259,7 +259,7 @@ print(f"\n[Model B ]:\n{result.get('answer_b', 'No response')}")
 print("="*40)
 ```
 
-### Model C
+### 模型 C
 
 ```{python}
 print(MODEL_C)
@@ -267,7 +267,7 @@ print(f"\n[Model C ]:\n{result.get('answer_c', 'No response')}")
 print("="*40)
 ```
 
-### Model JUDGE
+### 裁判模型 (Model JUDGE)
 
 ```{python}
 print("\n>>> JUDGE'S VERDICT <<<")
@@ -283,11 +283,11 @@ print("=====")
 print(result["judgment"])
 ```
 
-# Langchain
+# LangChain
 
-## 1. Setup and Environment
+## 1. 设置与环境
 
-First, we need to import necessary libraries and load our API key. We ensure that `openrouter` is available in our environment. We will use `langchain-openai` to interact with OpenRouter.
+首先，我们需要导入必要的库并加载 API 密钥。我们确保环境中可以使用 openrouter。我们将使用 `langchain-openai` 与 OpenRouter 进行交互。
 
 ```{python}
 import os
@@ -307,9 +307,9 @@ else:
     print("API Key loaded successfully.")
 ```
 
-## 2. Initialize Models
+## 2. 初始化模型
 
-We will initialize three model instances pointing to OpenRouter.
+我们将初始化指向 OpenRouter 的三个模型实例。
 
 ```{python}
 # Models
@@ -335,9 +335,9 @@ model_c = get_model(MODEL_C_NAME)
 model_judge = get_model(MODEL_JUDGE_NAME)
 ```
 
-## 3. Define the Chains and Workflow
+## 3. 定义链 (Chains) 与工作流
 
-Using LangChain Expression Language (LCEL), we can easily define parallel execution and sequential steps.
+使用 LangChain 表达式语言 (LCEL)，我们可以轻松定义并行执行和顺序步骤。
 
 ```{python}
 # Step 1: Query models in parallel
@@ -397,9 +397,9 @@ full_chain = parallel_responses | {
 }
 ```
 
-## 4. Execution
+## 4. 执行
 
-Finally, we run the chain with a sample question.
+最后，我们使用一个示例问题运行该链。
 
 ```{python}
 #| output: true
@@ -411,7 +411,7 @@ print(f"--- Running Workflow for Question: {input_question} ---")
 result = full_chain.invoke({"question": input_question})
 ```
 
-## 5. Display Results
+## 5. 显示结果
 
 ```{python}
 #| output: true
@@ -420,14 +420,14 @@ print(f"QUESTION: {result['question']}")
 print("="*40)
 ```
 
-### Model A
+### 模型 A
 
 ```{python}
 print(f"MODEL: {MODEL_A_NAME}")
 print(f"\n[Model A]:\n{result.get('answer_a', 'No response')}") 
 ```
 
-### Model B
+### 模型 B
 
 ```{python}
 #| output: true
@@ -436,7 +436,7 @@ print(f"\n[Model B]:\n{result.get('answer_b', 'No response')}")
 print("="*40)
 ```
 
-### Model C
+### 模型 C
 
 ```{python}
 #| output: true
@@ -445,7 +445,7 @@ print(f"\n[Model C]:\n{result.get('answer_c', 'No response')}")
 print("="*40)
 ```
 
-### AI Judge Verdict
+### AI 裁判结论
 
 ```{python}
 #| output: true
@@ -464,7 +464,7 @@ print(result['judgment'])
 ![](images/clipboard-1254380001.png)
 
 
-## json file
+## JSON 文件
 
 ```{python}
 #| eval: false

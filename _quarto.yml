@@ -32,12 +32,19 @@ website:
       - text: "博客"
         href: posts.qmd
       - cv.qmd
+      - text: "中文/EN" 
+        menu:
+          - text: "中文"
+            href: https://jcwinning.github.io/LandingPage_CN
+          - text: "English"
+            href: https://jcwinning.github.io/LandingPage
+   
       - icon: github
         href: https://github.com/JCwinning
       - icon: rss
         href: index.xml
   page-footer:
-    right: "本博客由 ❤️ 和 [Quarto](https://quarto.org/) 构建。"
+    right: "Not right reserved 2026"
 
 
 format:

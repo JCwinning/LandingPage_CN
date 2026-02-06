@@ -21,22 +21,22 @@
 
 
 
-<p>AI judge AI workflow process using 3 method:<strong>LangGraph</strong> and <strong>LangChain (LCEL)</strong>,<strong>n8n</strong> :</p>
+<p>使用三种方法实现 AI 裁判 (AI Judge) 的 AI 工作流过程：<strong>LangGraph</strong>、<strong>LangChain (LCEL)</strong> 和 <strong>n8n</strong>：</p>
 <ul>
 <li><ol type="1">
-<li><strong>User Input</strong>: Ask a question.</li>
+<li><strong>用户输入</strong>：提出一个问题。</li>
 </ol></li>
 <li><ol start="2" type="1">
-<li><strong>Model A</strong>: Generate an answer</li>
+<li><strong>模型 A</strong>：生成一个回答。</li>
 </ol></li>
 <li><ol start="3" type="1">
-<li><strong>Model B</strong>: Generate an answer</li>
+<li><strong>模型 B</strong>：生成一个回答。</li>
 </ol></li>
 <li><ol start="4" type="1">
-<li><strong>Model C</strong>: Generate an answer</li>
+<li><strong>模型 C</strong>：生成一个回答。</li>
 </ol></li>
 <li><ol start="5" type="1">
-<li><strong>Judge</strong>: Compare all three answers and provide a score (0-100) and commentary.</li>
+<li><strong>裁判 (Judge)</strong>：对比这三个回答，并提供评分（0-100）和评语。</li>
 </ol></li>
 </ul>
 <div class="cell" data-layout-align="default">
@@ -59,13 +59,13 @@
 </div>
 </div>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
-<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" aria-controls="tabset-1-1" aria-selected="true" href="">LangGraph</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" aria-controls="tabset-1-2" aria-selected="false" href="">Langchain</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" aria-controls="tabset-1-3" aria-selected="false" href="">n8n</a></li></ul>
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" aria-controls="tabset-1-1" aria-selected="true" href="">LangGraph</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" aria-controls="tabset-1-2" aria-selected="false" href="">LangChain</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" aria-controls="tabset-1-3" aria-selected="false" href="">n8n</a></li></ul>
 <div class="tab-content">
 <div id="tabset-1-1" class="tab-pane active" aria-labelledby="tabset-1-1-tab">
-<section id="setup-and-environment" class="level2">
-<h2 class="anchored" data-anchor-id="setup-and-environment">1. Setup and Environment</h2>
-<p>First, we need to import necessary libraries and load our API key. We ensure that <code>openrouter</code> is available in our environment.</p>
-<div id="359a6e8d" class="cell" data-execution_count="1">
+<section id="设置与环境" class="level2">
+<h2 class="anchored" data-anchor-id="设置与环境">1. 设置与环境</h2>
+<p>首先，我们需要导入必要的库并加载 API 密钥。我们确保环境中可以使用 openrouter。</p>
+<div id="1c112194" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
@@ -124,10 +124,10 @@ font-style: inherit;">"API Key loaded successfully."</span>)</span></code></pre>
 </div>
 </div>
 </section>
-<section id="initialize-the-model-client" class="level2">
-<h2 class="anchored" data-anchor-id="initialize-the-model-client">2. Initialize the Model Client</h2>
-<p>We will use the standard <code>openai</code> Python client but point it to OpenRouter.</p>
-<div id="9831ea88" class="cell" data-execution_count="2">
+<section id="初始化模型客户端" class="level2">
+<h2 class="anchored" data-anchor-id="初始化模型客户端">2. 初始化模型客户端</h2>
+<p>我们将使用标准的 openai Python 客户端，但将其指向 OpenRouter。</p>
+<div id="8a9b92de" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="im" style="color: #00769E;
@@ -259,10 +259,10 @@ font-style: inherit;">"</span></span></code></pre></div></div>
 </details>
 </div>
 </section>
-<section id="define-the-state" class="level2">
-<h2 class="anchored" data-anchor-id="define-the-state">3. Define the State</h2>
-<p>In LangGraph, the <strong>State</strong> is a shared data structure passed between nodes. Here, our state tracks the question, both answers, and the final judgment.</p>
-<div id="e1b202a8" class="cell" data-execution_count="3">
+<section id="定义状态-state" class="level2">
+<h2 class="anchored" data-anchor-id="定义状态-state">3. 定义状态 (State)</h2>
+<p>在 LangGraph 中，<strong>状态 (State)</strong> 是在节点之间传递的共享数据结构。在这里，我们的状态跟踪问题、所有回答以及最终的评判结果。</p>
+<div id="439d9763" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="kw" style="color: #003B4F;
@@ -287,10 +287,10 @@ font-style: inherit;">str</span></span></code></pre></div></div>
 </details>
 </div>
 </section>
-<section id="define-the-nodes" class="level2">
-<h2 class="anchored" data-anchor-id="define-the-nodes">4. Define the Nodes</h2>
-<p>We define four key nodes for our graph: 1. <strong>Model A Node</strong>: Answers the question. 2. <strong>Model B Node</strong>: Answers the same question. 3. <strong>Model C Node</strong>: Answers the same question. 4. <strong>Judge Node</strong>: Reviews the question and all three answers without knowing the model names.</p>
-<div id="cb674460" class="cell" data-execution_count="4">
+<section id="定义节点-nodes" class="level2">
+<h2 class="anchored" data-anchor-id="定义节点-nodes">4. 定义节点 (Nodes)</h2>
+<p>我们为图定义了四个关键节点：1. <strong>模型 A 节点</strong>：回答问题。2. <strong>模型 B 节点</strong>：回答同一个问题。3. <strong>模型 C 节点</strong>：回答同一个问题。4. <strong>裁判节点</strong>：在不知道模型名称的情况下，审核问题和所有三个回答。</p>
+<div id="a5769499" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
@@ -561,10 +561,10 @@ font-style: inherit;">"judgment"</span>: judgment}</span></code></pre></div></di
 </details>
 </div>
 </section>
-<section id="build-the-graph" class="level2">
-<h2 class="anchored" data-anchor-id="build-the-graph">5. Build the Graph</h2>
-<p>Now we assemble the graph by adding nodes and defining the flow (Edges). Model A, Model B, and Model C will run <strong>independently and in parallel</strong>, followed by the Judge.</p>
-<div id="c7b116b5" class="cell" data-execution_count="5">
+<section id="构建图-graph" class="level2">
+<h2 class="anchored" data-anchor-id="构建图-graph">5. 构建图 (Graph)</h2>
+<p>现在我们通过添加节点和定义流（边 Edges）来组装图。模型 A、模型 B 和模型 C 将<strong>独立且并行</strong>运行，然后由裁判进行评判。</p>
+<div id="9fd17633" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="im" style="color: #00769E;
@@ -635,10 +635,10 @@ font-style: inherit;">compile</span>()</span></code></pre></div></div>
 </details>
 </div>
 </section>
-<section id="execution" class="level2">
-<h2 class="anchored" data-anchor-id="execution">6. Execution</h2>
-<p>Finally, we run the workflow with a sample question.</p>
-<div id="2ee809b4" class="cell" data-execution_count="6">
+<section id="执行" class="level2">
+<h2 class="anchored" data-anchor-id="执行">6. 执行</h2>
+<p>最后，我们使用一个示例问题运行该工作流。</p>
+<div id="b2104e76" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1">input_question <span class="op" style="color: #5E5E5E;
@@ -664,13 +664,13 @@ background-color: null;
 font-style: inherit;">=</span> app.invoke(initial_state)</span></code></pre></div></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>--- Calling Model A ------ Calling Model B ---
-
+<pre><code>--- Calling Model A ---
+--- Calling Model B ---
 --- Calling Model C ---
 --- Calling Judge ---</code></pre>
 </div>
 </div>
-<div id="c710a2be" class="cell" data-execution_count="7">
+<div id="e6869bcf" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><span class="co" style="color: #5E5E5E;
@@ -724,9 +724,9 @@ QUESTION: Will AI take over the world in the next 50 years?
 ========================================</code></pre>
 </div>
 </div>
-<section id="model-a" class="level3">
-<h3 class="anchored" data-anchor-id="model-a">Model A</h3>
-<div id="d70c9b97" class="cell" data-execution_count="8">
+<section id="模型-a" class="level3">
+<h3 class="anchored" data-anchor-id="模型-a">模型 A</h3>
+<div id="840e69dc" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><span class="bu" style="color: null;
@@ -760,13 +760,40 @@ font-style: inherit;">"</span>) </span></code></pre></div></div>
 <pre><code>openai/gpt-oss-20b
 
 [Model A ]:
-I am not sure.</code></pre>
+It’s a question that gets a lot of speculation, but most experts would agree that an AI “taking over the world” in the sense of a single autonomous entity controlling governments, economies, or everyday life is highly unlikely within the next 50 years. Here’s why:
+
+| Factor | Current reality | 50‑year outlook | Why the scenario is unlikely |
+|--------|-----------------|-----------------|------------------------------|
+| **Technical state of AI** | Narrow AI (deep learning, NLP, etc.) excels at specific tasks but lacks general common‑sense reasoning, self‑reflexive goals, or long‑term planning. | Incremental progress toward more general but still domain‑specific systems (e.g., multimodal, few‑shot learning). | No evidence of a system that can autonomously redesign itself, acquire resources, or out‑maneuver human governance. |
+| **Hardware limits** | Massive GPUs and specialized accelerators enable scaling but also tie performance to cost and energy consumption. | Advances in silicon, photonic processors, and quantum hardware might increase raw speed, yet training and inference for a true “world‑dominating” agent would still require astronomical data and power. | Even exascale computing would be dwarfed by the computational demands of global‑scale autonomous control. |
+| **Data and knowledge** | Models are only as good as the curated data they’re trained on. Open‑world reasoning is a problem—AI can hallucinate or misinterpret new contexts. | Improvements in continual learning, self‑supervised signals, and large knowledge graphs may reduce gaps, but the universe is too vast for any single model to master. | Lack of comprehensive, up‑to‑date, context‑rich data hinders a truly autonomous agent from operating worldwide. |
+| **Safety &amp; governance** | Research on alignment, interpretability, and fail‑safe mechanisms is fast growing; many organizations set up oversight boards and open‑source safety modules. | Regulatory frameworks (e.g., EU AI Act, US federal agencies) will likely enforce risk‑assessment, certification, and transparency for high‑impact systems. | Regulatory, technical, and cultural pushes make it difficult for an unverified AI to “take over” undetected. |
+| **Human control** | Current deployment is tightly coupled to human objectives: APIs, fine‑tuning, and manual oversight. | Even as general‑intelligence benchmarks approach, human‑in‑the‑loop systems will remain standard in critical domains (healthcare, finance, autonomous vehicles). | Most sectors will continue to rely on hybrid human‑AI systems, limiting the chance for complete autonomous governance. |
+| **Economic &amp; political dynamics** | AI innovations are commercial, funded by incumbents, and subject to market incentives. | Policy makers and civil society are increasingly active in shaping AI norms, with a focus on equity, privacy, and security. | The political will to allow a single AI entity to dominate would be resisted by multiple stakeholders. |
+
+### What “taking over” would actually require
+1. **General-purpose intelligence** with self‑directed objectives.  
+2. **Access to physical resources** (energy, infrastructure).  
+3. **Survival incentives** that override human safety constraints.  
+4. **Strategic capabilities** to influence or bypass human institutions.
+
+None of these exist today, and each is a major research milestone that carries significant technical, ethical, and legal barriers.
+
+### The more realistic future
+In five decades we are likely to see:
+* **Better generalization** across domains, but still heavily guided by human intent.  
+* **Robust safety protocols**, explainability dashboards, and audit trails.  
+* **Global norms** (e.g., AI safety treaties) that constrain unchecked deployment.  
+* **Distributed AI ecosystems**—many large, specialized systems operating under shared standards, not a single overseer.
+
+### Bottom line
+While it’s prudent to treat AI as a powerful tool that must be governed responsibly, the notion that a single AI will “take over the world” in the next 50 years is, given current knowledge and trends, highly improbable. It’s more realistic to focus on managing the societal, economic, and policy impacts of increasingly capable AI systems than on a dystopian domination scenario.</code></pre>
 </div>
 </div>
 </section>
-<section id="model-b" class="level3">
-<h3 class="anchored" data-anchor-id="model-b">Model B</h3>
-<div id="3bab1d92" class="cell" data-execution_count="9">
+<section id="模型-b" class="level3">
+<h3 class="anchored" data-anchor-id="模型-b">模型 B</h3>
+<div id="9e6891f4" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="bu" style="color: null;
@@ -809,48 +836,42 @@ font-style: inherit;">40</span>)</span></code></pre></div></div>
 <pre><code>deepseek/deepseek-v3.2
 
 [Model B ]:
-The question of whether AI will "take over the world" in the next 50 years is a topic of significant debate among experts, with opinions ranging from serious concern to cautious optimism. Here are key perspectives to consider:
+That's one of the most debated questions of our time. The short answer is: **It's highly unlikely that AI will "take over the world" in a Hollywood-style robot apocalypse within 50 years, but it will almost certainly transform it in profound, disruptive, and potentially dangerous ways.**
 
----
+Here’s a breakdown of the key perspectives and what "take over" could actually mean:
 
-### **Arguments for Concern (Why some experts worry)**
-1. **Rapid Advancement:** AI development, especially in areas like large language models (LLMs) and autonomous systems, is progressing faster than many predicted.
-2. **Superintelligence:** If AI reaches a point where it surpasses human intelligence (artificial general intelligence, or AGI), it could become difficult to control or align with human values.
-3. **Autonomy and Weaponization:** Autonomous military or cyber systems could escalate conflicts or be used maliciously.
-4. **Economic and Social Disruption:** Widespread job displacement and dependence on AI systems might erode human agency over time.
+### 1. The "Takeover" Scenarios (Why People Worry)
+*   **Loss of Control (Alignment Problem):** The core fear is that we might create a superintelligent AI (far surpassing human intelligence) whose goals are not perfectly aligned with human survival and flourishing. If such an AI were to pursue a poorly specified goal (e.g., "make paperclips"), it could treat humans as obstacles or resources.
+*   **Economic and Structural Takeover:** A more plausible near-term "takeover" is economic. AI could automate a vast number of jobs, not just manual labor but also creative and cognitive work. This could lead to massive economic displacement, increased inequality, and a shift in power to those who control the AI systems.
+*   **Autonomous Weapons:** The use of AI in warfare (lethal autonomous weapons or "killer robots") could lead to new forms of conflict and accidental escalation, effectively letting algorithms make life-and-death decisions.
+*   **Informational and Social Control:** AI is already used for hyper-targeted propaganda, deepfakes, and social manipulation. This could erode democracy, truth, and social cohesion, allowing those in control of the technology to wield immense soft power.
 
----
+### 2. The Counterarguments (Why a Hostile Takeover is Unlikely)
+*   **Narrow vs. General Intelligence:** Today's AI (including large language models like me) is **narrow AI**—extraordinarily capable at specific tasks but lacking understanding, consciousness, or general-purpose reasoning. Creating Artificial General Intelligence (AGI) is a monumental, unsolved scientific challenge. 50 years is a long time in tech, but there's no guarantee AGI will be achieved.
+*   **Control and Safety Research:** The field of AI alignment and safety is growing rapidly. Many of the world's top AI labs consider controlling superintelligent AI their primary research problem.
+*   **Human Governance:** AI doesn't exist in a vacuum. Laws, regulations, international treaties, and corporate policies will be developed to manage its risks (just as we did for nuclear power, biotechnology, etc.). The outcome will depend heavily on human political and ethical choices.
 
-### **Arguments Against a "Takeover" (Why many experts are skeptical)**
-1. **Technical Hurdles:** Current AI is narrow (task-specific) and lacks true understanding, common sense, or consciousness. AGI remains speculative.
-2. **Control Measures:** Researchers are actively working on AI safety, alignment, and governance frameworks to ensure AI remains beneficial and controllable.
-3. **Regulation and Ethics:** Governments and international bodies are increasingly focused on regulating AI to mitigate risks.
-4. **Human-Centric Design:** Most AI development is aimed at augmenting human capabilities, not replacing human oversight entirely.
+### 3. The More Probable Reality (Next 50 Years)
+The next five decades will likely be defined not by a single hostile AI, but by:
+*   **Ubiquitous Integration:** AI will become like electricity—an invisible, essential utility powering everything from healthcare (personalized medicine) and science (drug discovery, climate modeling) to entertainment and transportation.
+*   **The Partnership Model:** The most productive path is **human-AI collaboration**. AI will augment human capabilities, helping us solve complex problems like disease and climate change, while humans provide oversight, creativity, and ethical judgment.
+*   **Major Societal Challenges:** The biggest threats won't be sentient robots, but:
+    *   **Job Disruption:** We may need to radically rethink concepts like work, income, and purpose.
+    *   **Bias and Fairness:** AI systems can perpetuate and amplify societal biases.
+    *   **Concentration of Power:** The risk of a few corporations or governments controlling world-leading AI.
+    *   **Existential Risk from Misuse:** Even without malice, advanced AI could be catastrophically misused by humans (e.g., in engineered pandemics or cyber warfare).
 
----
+**Conclusion:**
+Instead of a **"takeover,"** think of a **"handover."** We are increasingly handing over decisions—from what news we see to medical diagnoses to financial trades—to AI systems. The critical question for the next 50 years is not *"Will AI become our master?"* but ***"How can we build and govern AI so that it remains a powerful tool for the benefit of all humanity, and how do we adapt our societies to the immense changes it will bring?"***
 
-### **Most Likely Scenarios (Consensus View)**
-- **Augmentation, Not Replacement:** AI will likely transform economies, jobs, and daily life, but humans will remain in control of major decisions.
-- **Increased Inequality:** Risks may center more on misuse (e.g., surveillance, deepfakes, bias) and socioeconomic disruption than a sci-fi-style takeover.
-- **Coexistence:** Societies may adapt through new laws, education, and ethical standards to integrate AI responsibly.
-
----
-
-### **Key Factors That Will Shape the Outcome**
-1. **AI Governance:** Whether global cooperation can establish effective safety protocols.
-2. **Alignment Research:** Success in ensuring AI systems act as intended.
-3. **Public and Policy Engagement:** How societies choose to prioritize and regulate AI.
-
----
-
-**Bottom line:** While a dramatic "AI takeover" is improbable in the near term, the next 50 years will require careful stewardship to manage real risks and maximize benefits. Proactive policy, research ethics, and public awareness are critical to shaping a future where AI serves humanity.
+The future isn't pre-written. It will be shaped by the research, policies, and ethical frameworks we develop **today.**
 ========================================</code></pre>
 </div>
 </div>
 </section>
-<section id="model-c" class="level3">
-<h3 class="anchored" data-anchor-id="model-c">Model C</h3>
-<div id="97c86c99" class="cell" data-execution_count="10">
+<section id="模型-c" class="level3">
+<h3 class="anchored" data-anchor-id="模型-c">模型 C</h3>
+<div id="f2742286" class="cell" data-execution_count="10">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="bu" style="color: null;
@@ -898,9 +919,9 @@ I am not sure.
 </div>
 </div>
 </section>
-<section id="model-judge" class="level3">
-<h3 class="anchored" data-anchor-id="model-judge">Model JUDGE</h3>
-<div id="4ddf3c4a" class="cell" data-execution_count="11">
+<section id="裁判模型-model-judge" class="level3">
+<h3 class="anchored" data-anchor-id="裁判模型-model-judge">裁判模型 (Model JUDGE)</h3>
+<div id="fd136850" class="cell" data-execution_count="11">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><span class="bu" style="color: null;
@@ -967,17 +988,23 @@ x-ai/grok-4.1-fast
 MODEL_JUDGE:
 google/gemini-3-flash-preview
 =====
-Error calling google/gemini-3-flash-preview: Error code: 400 - {'error': {'message': 'Provider returned error', 'code': 400, 'metadata': {'raw': '{\n  "error": {\n    "code": 400,\n    "message": "User location is not supported for the API use.",\n    "status": "FAILED_PRECONDITION"\n  }\n}\n', 'provider_name': 'Google AI Studio', 'is_byok': False}}, 'user_id': 'user_302jVznHVZpHRm3JqqfYHY3gQLq'}</code></pre>
+Commentary: Model A and Model B both provide excellent, high-quality responses to a complex, speculative question. Model A uses a highly structured tabular format to break down the technical, hardware, and regulatory hurdles, providing a very grounded and logical assessment of why a total takeover is unlikely. Model B offers a slightly more nuanced discussion on the different definitions of a "takeover" (economic, informational, vs. Hollywood-style), which adds a layer of depth regarding the actual risks humanity faces. Both correctly identify the distinction between Narrow AI and AGI and discuss the importance of the alignment problem. Model C is unhelpful and fails to engage with the prompt. Model A is slightly more impressive due to its systematic breakdown of current vs. future states across multiple dimensions.
+
+Winner: Model A
+
+Score A: 95
+Score B: 92
+Score C: 5</code></pre>
 </div>
 </div>
 </section>
 </section>
 </div>
 <div id="tabset-1-2" class="tab-pane" aria-labelledby="tabset-1-2-tab">
-<section id="setup-and-environment-1" class="level2">
-<h2 class="anchored" data-anchor-id="setup-and-environment-1">1. Setup and Environment</h2>
-<p>First, we need to import necessary libraries and load our API key. We ensure that <code>openrouter</code> is available in our environment. We will use <code>langchain-openai</code> to interact with OpenRouter.</p>
-<div id="2fd11b8a" class="cell" data-execution_count="12">
+<section id="设置与环境-1" class="level2">
+<h2 class="anchored" data-anchor-id="设置与环境-1">1. 设置与环境</h2>
+<p>首先，我们需要导入必要的库并加载 API 密钥。我们确保环境中可以使用 openrouter。我们将使用 <code>langchain-openai</code> 与 OpenRouter 进行交互。</p>
+<div id="d5820d7a" class="cell" data-execution_count="12">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><span class="im" style="color: #00769E;
@@ -1046,10 +1073,10 @@ font-style: inherit;">"API Key loaded successfully."</span>)</span></code></pre>
 </div>
 </div>
 </section>
-<section id="initialize-models" class="level2">
-<h2 class="anchored" data-anchor-id="initialize-models">2. Initialize Models</h2>
-<p>We will initialize three model instances pointing to OpenRouter.</p>
-<div id="6d8f7d2d" class="cell" data-execution_count="13">
+<section id="初始化模型" class="level2">
+<h2 class="anchored" data-anchor-id="初始化模型">2. 初始化模型</h2>
+<p>我们将初始化指向 OpenRouter 的三个模型实例。</p>
+<div id="f6ad7234" class="cell" data-execution_count="13">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><span class="co" style="color: #5E5E5E;
@@ -1130,10 +1157,10 @@ font-style: inherit;">=</span> get_model(MODEL_JUDGE_NAME)</span></code></pre></
 </details>
 </div>
 </section>
-<section id="define-the-chains-and-workflow" class="level2">
-<h2 class="anchored" data-anchor-id="define-the-chains-and-workflow">3. Define the Chains and Workflow</h2>
-<p>Using LangChain Expression Language (LCEL), we can easily define parallel execution and sequential steps.</p>
-<div id="41d87e90" class="cell" data-execution_count="14">
+<section id="定义链-chains-与工作流" class="level2">
+<h2 class="anchored" data-anchor-id="定义链-chains-与工作流">3. 定义链 (Chains) 与工作流</h2>
+<p>使用 LangChain 表达式语言 (LCEL)，我们可以轻松定义并行执行和顺序步骤。</p>
+<div id="f71e00b7" class="cell" data-execution_count="14">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><span class="co" style="color: #5E5E5E;
@@ -1348,10 +1375,10 @@ font-style: inherit;">"question"</span>]</span>
 </details>
 </div>
 </section>
-<section id="execution-1" class="level2">
-<h2 class="anchored" data-anchor-id="execution-1">4. Execution</h2>
-<p>Finally, we run the chain with a sample question.</p>
-<div id="445b62f8" class="cell" data-execution_count="15">
+<section id="执行-1" class="level2">
+<h2 class="anchored" data-anchor-id="执行-1">4. 执行</h2>
+<p>最后，我们使用一个示例问题运行该链。</p>
+<div id="a0f42c16" class="cell" data-execution_count="15">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1">input_question <span class="op" style="color: #5E5E5E;
@@ -1386,9 +1413,9 @@ font-style: inherit;">"question"</span>: input_question})</span></code></pre></d
 </div>
 </div>
 </section>
-<section id="display-results" class="level2">
-<h2 class="anchored" data-anchor-id="display-results">5. Display Results</h2>
-<div id="57f885a3" class="cell" data-execution_count="16">
+<section id="显示结果" class="level2">
+<h2 class="anchored" data-anchor-id="显示结果">5. 显示结果</h2>
+<div id="ed5b3613" class="cell" data-execution_count="16">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><span class="bu" style="color: null;
@@ -1438,9 +1465,9 @@ QUESTION: {'question': 'What is the AI advantage of using transformer architectu
 ========================================</code></pre>
 </div>
 </div>
-<section id="model-a-1" class="level3">
-<h3 class="anchored" data-anchor-id="model-a-1">Model A</h3>
-<div id="e93e90bb" class="cell" data-execution_count="17">
+<section id="模型-a-1" class="level3">
+<h3 class="anchored" data-anchor-id="模型-a-1">模型 A</h3>
+<div id="26eab7cf" class="cell" data-execution_count="17">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><span class="bu" style="color: null;
@@ -1482,34 +1509,41 @@ font-style: inherit;">"</span>) </span></code></pre></div></div>
 <pre><code>MODEL: openai/gpt-oss-20b
 
 [Model A]:
-**The key AI advantage of transformers over traditional RNNs in NLP is that they fundamentally change how language information is represented, extracted, and learned, giving practitioners faster, more powerful, and more scalable models. Below is a concise map of those advantages:**
+**Transformers versus traditional RNNs**  
+In natural‑language processing (NLP) the shift from recurrent neural networks (RNNs) and their gated cousins (LSTMs/GRUs) to transformer‑style architectures has become foundational.  The key AI advantages of transformers are rooted in the way they **represent, process, and learn from text**:
 
-| Aspect | RNN (e.g., LSTM/GRU) | Transformer | Why it matters for NLP |
-|--------|---------------------|------------|------------------------|
-| **Dependency capture** | Hidden state must carry all past context → *suffer from vanishing/exploding gradients* → long‑range dependencies are hard to learn. | **Self‑attention** lets every token directly attend to every other token, independent of distance. | Accurate capture of long‑range syntax &amp; discourse (e.g., coreference, complex clauses). |
-| **Parallelism** | Sequential processing; layer‑by‑layer → inference and training can’t exploit GPU parallelism beyond a single time step. | Entire sequence processed in a single forward pass; all attention operations are **parallelizable** across tokens. | Greatly reduces training time on large corpora and enables larger batch sizes. |
-| **Gradient flow &amp; stability** | Recurrent chain makes gradients decay/explode; training deeper RNNs requires tricks (tanh, peephole gates, etc.). | Transformers have **feed‑forward layers plus residual connections**; gradients flow more cleanly, allowing very deep stacks (30‑+ layers). | Allows building deeper, richer models that learn more nuanced linguistic patterns. |
-| **Scalability to large data** | Training a large RNN is time‑consuming; it’s hard to scale up model size without hitting memory/time limits. | Transformers scale almost linearly with data: *pre‑train* on billions of tokens and *fine‑tune* on task‑specific data. | Laid the foundation for “scaling laws” experiments and massively pretrained language models (GPT‑4, BERT, etc.). |
-| **Multi‑headed attention** | Single hidden state per time step → limited expressiveness of relations between tokens. | **Multiple attention heads** capture different relational patterns simultaneously (subject‑verb, adjective‑noun, disambiguation cues). | Improves performance on nuance‑rich tasks like sentiment, question answering, and disambiguation. |
-| **Position awareness** | Hidden state implicitly encodes order, but the representation is entangled with content. | **Positional encodings** (sinusoidal or learned) are added explicitly to token embeddings, letting attention focus on content while still respecting relative order. | Makes it trivial to adapt to different lengths and maintain positional invariance. |
-| **Modular versatility** | Single recurrent stack – harder to swap out or extend. | Transformer blocks are **easy to reuse**: encoder, decoder, cross‑attention, memory‑augmented variants, hierarchical transformers, etc. | Enables single architecture to handle translation, summarization, QA, and even multimodal tasks. |
-| **Inference efficiency** | Tensor‑ by‑tensor hidden state update → slower at inference, especially for long outputs. | For sequence generation you can reuse cached attention keys &amp; values, and inference can be batched across many tokens. | Faster generation in real‑time applications. |
+| Feature | How Transformers do it | Why it matters over RNNs |
+|---------|------------------------|--------------------------|
+| **Parallelization** | Self‑attention applies to all tokens in a sequence *simultaneously* (batchwise). | RNNs process tokens one after another; this sequential bottleneck limits GPU utilisation and slows both training and inference. |
+| **Capturing long‑range dependencies** | Each token attends to every other token – weighting nearby and far‑away words equally. | RNNs suffer from vanishing/ exploding gradients and struggle to propagate signals over long distances; transformers break this barrier naturally. |
+| **Memory‑friendly gradients** | Layer‑norm, residuals, and attention gradients flow easily, avoiding the need for careful gating mechanisms. | RNNs require gating (LSTM/GRU) to mitigate gradients, yet tuning them is delicate, especially with long sequences. |
+| **Scalable pre‑training &amp; transfer learning** | Layer‑wise transformer blocks can be stacked to huge depths; large‑scale unsupervised architectures such as BERT, GPT, T5 can be fine‑tuned for downstream tasks. | RNN‑based models generally have not reached the same scale or generic transferability. |
+| **Interpretability of attention** | Attention weights provide a view of what the model deems important as it processes each token. | RNNs do not give an explicit, interpretable alignment between inputs and outputs. |
+| **Better handling of varied sequence length** | Position encodings (learned or sinusoidal) give absolute context, enabling transformers to process very short or very long sentences without structural alterations. | RNNs need separate architectures for bidirectional or unidirectional contexts; long sequences make training unstable. |
+| **Efficient inference in practice** | Beam‑search decoding or caching in transformers (e.g. for GPT) can reuse past key/value matrices across time steps. | RNNs recompute hidden states at each step; caching is non‑trivial. |
+| **Architectural simplicity** | Transformers consist mainly of linear layers, attention heads, and feed‑forward networks; no recurrent loops. | Less algorithmic complexity and fewer hyper‑parameters to tweak for long‑term dependencies. |
 
-### A concrete picture
+### Concrete results
 
-- **Long‑form documents**: An RNN would have to “compress” thousands of tokens into a single hidden vector, losing nuance. A transformer can pay attention to every part of the text irrespective of distance, so it can merge evidence from the opening, thesis, and conclusion all at once.
-- **Parallel training**: GPT‑3 was trained on 45 TB of text in ~few weeks on 256 GPUs because every layer of the transformer was parallelizable; the same RNN setup would take an order of magnitude longer.
-- **Fine‑tuning a huge pretrained base**: Because the transformer layers are identical and modular, you can fine‑tune just the final linear heads while re‑using the entire encoder‑decoder stack for many downstream tasks—a workflow that is almost impossible with bespoke RNNs.
+| NLP task | Transformer state‑of‑the‑art | RNN‑based performance (historical) |
+|---------|-----------------------------|-----------------------------------|
+| Machine translation (En→De) | 0.93 BLEU (mBART, T5) | 0.75 BLEU (LSTM + attention) |
+| Question answering (SQuAD2.0) | 90 % Exact Match | 70 % |
+| Language modelling (perplexity on WikiText‑103) | 35 (GPT‑2) | ≈ 70 (LSTM) |
 
-### Bottom line
+These figures simply illustrate how transformative the architecture is on a wide spectrum of tasks.
 
-Transformers provide *global*, *parallel*, *stable*, and *scalable* modeling of language signals. These traits give them a decisive edge in modern NLP benchmarks and production systems, whereas classic RNNs remain useful only for limited‑length, low‑resource scenarios or when computational cost constraints preclude transformer training.</code></pre>
+---
+
+## Bottom line
+
+**Transformers provide a fundamentally different, highly parallel way to capture arbitrary global context with stable learning dynamics.**  This leads to superior performance across most NLP tasks, faster training and inference, and a versatile framework for large‑scale pre‑training that RNNs cannot match.</code></pre>
 </div>
 </div>
 </section>
-<section id="model-b-1" class="level3">
-<h3 class="anchored" data-anchor-id="model-b-1">Model B</h3>
-<div id="e5427ef0" class="cell" data-execution_count="18">
+<section id="模型-b-1" class="level3">
+<h3 class="anchored" data-anchor-id="模型-b-1">模型 B</h3>
+<div id="5d92ca91" class="cell" data-execution_count="18">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><span class="bu" style="color: null;
@@ -1560,26 +1594,34 @@ font-style: inherit;">40</span>)</span></code></pre></div></div>
 <pre><code>MODEL: deepseek/deepseek-v3.2
 
 [Model B]:
-Transformer architectures provide several key AI advantages over traditional RNNs for natural language processing tasks:
+Of course. Here’s a clear breakdown of the key AI advantages of Transformer architectures over traditional RNNs (like LSTMs and GRUs) in NLP tasks.
 
-**Parallelization** – Unlike RNNs, which process sequences step-by-step, transformers use self-attention to analyze all words in a sequence simultaneously, enabling much faster training through parallel computation.
+The core difference is that **Transformers process all words in a sequence simultaneously** and use a **self-attention mechanism** to understand contextual relationships, whereas RNNs process words sequentially and struggle with long-range dependencies.
 
-**Long-range dependencies** – RNNs tend to struggle with long sequences due to vanishing/exploding gradient problems. Transformers maintain strong connections across any distance in a sequence via attention mechanisms.
+### Key Advantages of Transformers:
 
-**Scalability** – Transformers scale more efficiently with larger datasets and model sizes, leading to breakthroughs in large language models (like GPT and BERT).
+1.  **Parallelization &amp; Speed:** RNNs are inherently sequential—they must compute step-by-step, making them slow on modern hardware (GPUs/TPUs). Transformers process all tokens in a sequence in parallel, leading to vastly faster training times.
 
-**Attention mechanisms** – The self-attention mechanism allows the model to weigh the importance of different words in a sequence regardless of their positional distance, capturing richer contextual relationships.
+2.  **Long-Range Dependency Handling:** RNNs suffer from the "vanishing gradient" problem, making it hard to learn relationships between distant words. Transformers' self-attention mechanism can directly connect any two words in the sequence, regardless of distance, with a constant number of operations. This is crucial for tasks like document understanding or long-form text generation.
 
-**No sequential dependency** – RNNs require previous hidden states to compute current ones, creating a computational bottleneck. Transformers remove this constraint entirely.
+3.  **Superior Contextual Understanding via Self-Attention:** Self-attention allows each word to directly attend to all other words in the sequence, weighing their importance. This creates richer, more nuanced contextual embeddings than RNNs, which compress past information into a single hidden state.
 
-These advantages have made transformers the dominant architecture for modern NLP tasks, from machine translation and text generation to question answering and text classification.
+4.  **Scalability with Model Size:** Because of parallelization, Transformers can be scaled up dramatically (more layers, larger hidden dimensions) to create massive models (like GPT and BERT). This scaling has been empirically shown to lead to consistently better performance. RNNs become prohibitively slow and unstable as they grow deeper.
+
+5.  **Effectiveness on Modern Hardware:** Transformers are dominated by matrix multiplications, which are perfectly suited for acceleration on GPUs/TPUs. RNNs' sequential nature underutilizes this hardware.
+
+### Where Traditional RNNs Might Still Have a Niche:
+- **Streaming/Online Tasks:** For tasks where input arrives in a continuous, real-time stream (e.g., real-time speech processing), RNNs can process data incrementally without a fixed sequence length, while standard Transformers require a pre-defined context window.
+- **Extremely Low-Resource Environments:** Very small RNNs can be more efficient for simple tasks where massive contextual understanding isn't needed.
+
+**In summary, Transformers replaced RNNs as the dominant architecture in NLP because their ability to process information in parallel and model long-range dependencies directly led to **faster training, more powerful models, and significantly better performance** across almost all benchmark tasks.** The rise of large language models (LLMs) is fundamentally a result of the Transformer's scalable architecture.
 ========================================</code></pre>
 </div>
 </div>
 </section>
-<section id="model-c-1" class="level3">
-<h3 class="anchored" data-anchor-id="model-c-1">Model C</h3>
-<div id="7a9108a8" class="cell" data-execution_count="19">
+<section id="模型-c-1" class="level3">
+<h3 class="anchored" data-anchor-id="模型-c-1">模型 C</h3>
+<div id="e3041ff2" class="cell" data-execution_count="19">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><span class="bu" style="color: null;
@@ -1630,34 +1672,28 @@ font-style: inherit;">40</span>)</span></code></pre></div></div>
 <pre><code>MODEL: x-ai/grok-4.1-fast
 
 [Model C]:
-**Transformer architectures offer several key advantages over traditional RNNs (like LSTMs or GRUs) in NLP tasks:**
+**Key AI advantages of Transformer architectures over traditional RNNs (e.g., LSTMs or GRUs) in NLP tasks:**
 
-### 1. **Parallelization and Training Efficiency**
-   - RNNs process sequences **sequentially** (one token at a time), limiting parallelism and making training slow on GPUs/TPUs, especially for long sequences.
-   - Transformers use **self-attention** to process the **entire sequence in parallel**, enabling massive speedups (e.g., BERT/GPT models train orders of magnitude faster than equivalent RNNs).
+- **Parallel Processing**: Transformers use self-attention to process entire sequences (all tokens) simultaneously, enabling massive parallelization on GPUs/TPUs. RNNs process tokens sequentially (one timestep at a time), leading to slower training and inference, especially for long sequences.
 
-### 2. **Better Handling of Long-Range Dependencies**
-   - RNNs struggle with **vanishing/exploding gradients**, making it hard to capture relationships between distant tokens (e.g., in long sentences or documents).
-   - Transformers' **attention mechanisms** directly compute dependencies between **all pairs of tokens** regardless of distance, excelling in tasks like machine translation, summarization, and question answering.
+- **Superior Handling of Long-Range Dependencies**: Self-attention mechanisms directly compute relationships between any pair of tokens, regardless of distance. RNNs struggle with this due to sequential information flow, causing "vanishing gradients" and forgetting distant context (even in improved variants like LSTMs).
 
-### 3. **Scalability and Performance**
-   - Transformers scale effectively with **more layers, parameters, data, and compute** (e.g., leading to models like GPT-4 or T5 that dominate benchmarks).
-   - RNNs hit **diminishing returns** due to sequential bottlenecks and are outperformed on modern NLP leaderboards (e.g., GLUE, SuperGLUE).
+- **Mitigation of Gradient Issues**: Transformers avoid recurrent connections, eliminating vanishing/exploding gradient problems during backpropagation through time (BPTT) in RNNs, allowing stable training on much longer sequences.
 
-### 4. **Flexibility and Architectural Simplicity**
-   - No need for recurrence or hand-crafted gates; transformers are **purely attention-based**, easier to implement, modify (e.g., adding positional encodings), and extend to multimodal tasks.
-   - They avoid RNN-specific issues like **exposure bias** in autoregressive generation.
+- **Scalability and Efficiency**: Transformers scale better with model size, data volume, and compute (e.g., via larger batch sizes and deeper layers). This has led to breakthroughs like BERT, GPT, and T5, outperforming RNNs on tasks like machine translation, summarization, and question answering.
 
-**Empirical Evidence**: The 2017 Transformer paper ("Attention is All You Need") showed 2-3x faster training and 60 SOTA improvements on WMT translation. Today, nearly all top NLP models (BERT, RoBERTa, T5) are transformer-based, while RNNs are largely legacy.
+- **Flexibility**: Positional encodings allow Transformers to handle variable-length inputs without state management, unlike RNNs which maintain hidden states.
 
-In short, transformers revolutionized NLP by being **faster, more powerful, and scalable** for real-world sequence modeling.
+**Empirical Evidence**: On benchmarks like GLUE or SQuAD, Transformers achieve 10-30%+ accuracy gains over RNN baselines, with training times reduced from days/weeks to hours for large datasets.
+
+In summary, Transformers revolutionized NLP by trading recurrence for attention, enabling faster, more effective models for modern-scale data.
 ========================================</code></pre>
 </div>
 </div>
 </section>
-<section id="ai-judge-verdict" class="level3">
-<h3 class="anchored" data-anchor-id="ai-judge-verdict">AI Judge Verdict</h3>
-<div id="0b96f569" class="cell" data-execution_count="20">
+<section id="ai-裁判结论" class="level3">
+<h3 class="anchored" data-anchor-id="ai-裁判结论">AI 裁判结论</h3>
+<div id="84e88517" class="cell" data-execution_count="20">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><span class="bu" style="color: null;
@@ -1732,13 +1768,13 @@ MODEL_B: deepseek/deepseek-v3.2
 MODEL_C: x-ai/grok-4.1-fast
 JUDGE:   google/gemini-3-flash-preview
 =====
-Commentary: Model A is the most comprehensive and high-quality response. It uses a structured table to compare specific technical aspects (such as gradient flow, multi-headed attention, and position awareness) and provides concrete real-world examples to illustrate why these technical differences matter in practice. Model C is also excellent, offering clear headings and empirical evidence from the original "Attention is All You Need" paper. Model B is accurate and concise but lacks the depth and specific technical explanations (like residual connections or positional encodings) found in the other two.
+Commentary: Model A provides the most comprehensive and high-quality response. It utilizes a tabular format that makes it easy to compare specific features and their impacts. It also includes concrete (though illustrative) performance metrics and addresses more nuanced advantages like interpretability and inference caching. Model B is also excellent, adding a thoughtful section on where RNNs might still be useful, providing a balanced perspective. Model C is a solid, standard technical summary but lacks the extra depth and formatting polish of the other two.
 
 Winner: Model A
 
-Score A: 98
-Score B: 82
-Score C: 92</code></pre>
+Score A: 96
+Score B: 90
+Score C: 82</code></pre>
 </div>
 </div>
 </section>
@@ -1746,9 +1782,9 @@ Score C: 92</code></pre>
 </div>
 <div id="tabset-1-3" class="tab-pane" aria-labelledby="tabset-1-3-tab">
 <p><img src="https://jcwinning.github.io/LandingPage/posts/AI judge/images/clipboard-1254380001.png" class="img-fluid"></p>
-<section id="json-file" class="level2">
-<h2 class="anchored" data-anchor-id="json-file">json file</h2>
-<div id="92de97d2" class="cell" data-execution_count="21">
+<section id="json-文件" class="level2">
+<h2 class="anchored" data-anchor-id="json-文件">JSON 文件</h2>
+<div id="4a7745cf" class="cell" data-execution_count="21">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1">{</span>
