@@ -21,7 +21,7 @@ execute:
 马云爸爸这次狂砸30亿。加速AI落地的步伐。今天把千问服务器都搞崩溃了。大战只是刚刚开始。
 
 
-![](images/0.png){width="80%"}
+
 
 
 # 千问新年请喝奶茶或者咖啡
@@ -33,9 +33,9 @@ execute:
 ![](images/1.png){width="40%"}   ![](images/2.png){width="40%"}
 
 
+![](images/0.png){width="80%"}
 
 
-![](images/3.png){width="80%"}
 
 
 # 智谱上市请喝旺旺牛奶
@@ -44,8 +44,8 @@ execute:
 
 方法：配置MCP。输入“智谱旺旺”。拿到下单网址。填收货地址。
 
+![](images/3.png){width="80%"}
 
-![](images/4.png){width="80%"}
 
 
 # 智谱coding plan请喝泸上阿姨
@@ -54,4 +54,4 @@ execute:
 
 方法：配置MCP。输入“阿姨助我”。拿到免费码去泸上阿姨App下单。
 
-
+![](images/4.png){width="80%"}
