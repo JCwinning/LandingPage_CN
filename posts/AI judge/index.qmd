@@ -1,0 +1,930 @@
+---
+title: "AI 裁判 (AI Judge)"
+author: "Tony D"
+date: "2026-01-30"
+categories: [AI]
+image: "images/images.jpeg"
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    code-copy: true
+execute:
+  warning: false
+---
+
+
+AI judge AI workflow process using 3 method:**LangGraph** and **LangChain (LCEL)**,**n8n** :
+
+-   
+
+    1.  **User Input**: Ask a question.
+
+-   
+
+    2.  **Model A**: Generate an answer
+
+-   
+
+    3.  **Model B**: Generate an answer
+
+-   
+
+    4.  **Model C**: Generate an answer
+
+-   
+
+    5.  **Judge**: Compare all three answers and provide a score (0-100) and commentary.
+
+```{mermaid}
+graph TD
+    Start([Start]) --> ModelA[Model A]
+    Start --> ModelB[Model B]
+    Start --> ModelC[Model C]
+    ModelA --> Judge{AI Judge}
+    ModelB --> Judge
+    ModelC --> Judge
+    Judge --> End([End])
+```
+
+::: panel-tabset
+# LangGraph
+
+## 1. Setup and Environment
+
+First, we need to import necessary libraries and load our API key. We ensure that `openrouter` is available in our environment.
+
+```{python}
+import os
+from dotenv import load_dotenv
+from typing import TypedDict, Annotated
+from langgraph.graph import StateGraph, END
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Verify API Key
+if not os.getenv("openrouter"):
+    print("WARNING: openrouter not found in environment. Please check your .env file.")
+else:
+    print("API Key loaded successfully.")
+```
+
+## 2. Initialize the Model Client
+
+We will use the standard `openai` Python client but point it to OpenRouter.
+
+```{python}
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("openrouter"),
+)
+
+def query_model(model_name: str, prompt: str, system_prompt: str = None) -> str:
+    """Helper function to query an LLM via OpenRouter."""
+    try:
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+        
+        response = client.chat.completions.create(
+          extra_headers={
+                "HTTP-Referer": "https://ai_chatbot.github.io/",  
+                "X-Title": "AI Judge langgraph",  # Your app's display name
+            },
+            model=model_name,
+            messages=messages,
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"Error calling {model_name}: {e}"
+```
+
+## 3. Define the State
+
+In LangGraph, the **State** is a shared data structure passed between nodes. Here, our state tracks the question, both answers, and the final judgment.
+
+```{python}
+class JudgeState(TypedDict):
+    question: str
+    answer_a: str
+    answer_b: str
+    answer_c: str
+    judgment: str
+```
+
+## 4. Define the Nodes
+
+We define four key nodes for our graph: 1. **Model A Node**: Answers the question. 2. **Model B Node**: Answers the same question. 3. **Model C Node**: Answers the same question. 4. **Judge Node**: Reviews the question and all three answers without knowing the model names.
+
+```{python}
+# Models
+MODEL_A = "openai/gpt-oss-20b"
+MODEL_B =  "deepseek/deepseek-v3.2"
+MODEL_C = "x-ai/grok-4.1-fast"
+MODEL_JUDGE = "google/gemini-3-flash-preview"
+
+
+def node_model_a(state: JudgeState) -> JudgeState:
+    """Query Model A"""
+    print(f"--- Calling Model A ---")
+    system_msg = "If you do not know the answer then reply I am not sure."
+    ans = query_model(MODEL_A, state["question"], system_prompt=system_msg)
+    return {"answer_a": ans}
+
+
+def node_model_b(state: JudgeState) -> JudgeState:
+    """Query Model B"""
+    print(f"--- Calling Model B ---")
+    system_msg = "If you do not know the answer then reply I am not sure."
+    ans = query_model(MODEL_B, state["question"], system_prompt=system_msg)
+    return {"answer_b": ans}
+
+
+def node_model_c(state: JudgeState) -> JudgeState:
+    """Query Model C"""
+    print(f"--- Calling Model C ---")
+    system_msg = "If you do not know the answer then reply I am not sure."
+    ans = query_model(MODEL_C, state["question"], system_prompt=system_msg)
+    return {"answer_c": ans}
+
+
+def node_judge(state: JudgeState) -> JudgeState:
+    """Query Judge Model"""
+    print(f"--- Calling Judge ---")
+
+    prompt = f"""
+    You are an AI Judge. You will be presented with a question and three candidate answers (Model A, Model B, and Model C).
+    Your task is to judge the quality of the answers without knowing which models produced them.
+    
+    Question: {state['question']}
+    
+    Answer A:
+    {state['answer_a']}
+    
+    Answer B:
+    {state['answer_b']}
+    
+    Answer C:
+    {state['answer_c']}
+    
+    Task:
+    1. Compare the three answers for accuracy, clarity, and completeness.
+    2. format and length of the answers are not important, focus on content quality.
+    3. Provide a short commentary.
+    4. Assign a score from 0 to 100 for Model A, Model B, and Model C.
+    5. Declare the overall winner.
+    
+    Output Format:
+    Commentary: <text>
+    Winner: <Model A, Model B, or Model C>
+    Score A: <number>
+    Score B: <number>
+    Score C: <number>
+    """
+
+    judgment = query_model(MODEL_JUDGE, prompt)
+    return {"judgment": judgment}
+```
+
+## 5. Build the Graph
+
+Now we assemble the graph by adding nodes and defining the flow (Edges). Model A, Model B, and Model C will run **independently and in parallel**, followed by the Judge.
+
+```{python}
+from langgraph.graph import START
+
+workflow = StateGraph(JudgeState)
+
+# Add nodes
+workflow.add_node("model_a", node_model_a)
+workflow.add_node("model_b", node_model_b)
+workflow.add_node("model_c", node_model_c)
+workflow.add_node("judge", node_judge)
+
+# Parallel flow: START -> A & B & C -> Judge -> END
+workflow.add_edge(START, "model_a")
+workflow.add_edge(START, "model_b")
+workflow.add_edge(START, "model_c")
+workflow.add_edge("model_a", "judge")
+workflow.add_edge("model_b", "judge")
+workflow.add_edge("model_c", "judge")
+workflow.add_edge("judge", END)
+
+# Compile the graph
+app = workflow.compile()
+```
+
+## 6. Execution
+
+Finally, we run the workflow with a sample question.
+
+```{python}
+#| output: true
+input_question = "Will AI take over the world in the next 50 years?"
+
+# Initialize state
+initial_state = {"question": input_question}
+
+# Run the graph
+result = app.invoke(initial_state)
+```
+
+```{python}
+# Display Results
+print("\n" + "="*40)
+
+print(f"QUESTION: {result['question']}")
+print("="*40)
+```
+
+### Model A
+
+
+
+```{python}
+print(MODEL_A)
+print(f"\n[Model A ]:\n{result.get('answer_a', 'No response')}") 
+
+```
+
+### Model B
+
+```{python}
+print(MODEL_B)
+print(f"\n[Model B ]:\n{result.get('answer_b', 'No response')}")
+print("="*40)
+```
+
+### Model C
+
+```{python}
+print(MODEL_C)
+print(f"\n[Model C ]:\n{result.get('answer_c', 'No response')}")
+print("="*40)
+```
+
+### Model JUDGE
+
+```{python}
+print("\n>>> JUDGE'S VERDICT <<<")
+print("MODEL_A:")
+print(MODEL_A)
+print("MODEL_B:")
+print(MODEL_B)
+print("MODEL_C:")
+print(MODEL_C)
+print("MODEL_JUDGE:")
+print(MODEL_JUDGE)
+print("=====")
+print(result["judgment"])
+```
+
+# Langchain
+
+## 1. Setup and Environment
+
+First, we need to import necessary libraries and load our API key. We ensure that `openrouter` is available in our environment. We will use `langchain-openai` to interact with OpenRouter.
+
+```{python}
+import os
+from dotenv import load_dotenv
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnableParallel, RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Verify API Key
+if not os.getenv("openrouter"):
+    print("WARNING: openrouter not found in environment. Please check your .env file.")
+else:
+    print("API Key loaded successfully.")
+```
+
+## 2. Initialize Models
+
+We will initialize three model instances pointing to OpenRouter.
+
+```{python}
+# Models
+MODEL_A_NAME = "openai/gpt-oss-20b"
+MODEL_B_NAME = "deepseek/deepseek-v3.2"
+MODEL_C_NAME = "x-ai/grok-4.1-fast"
+MODEL_JUDGE_NAME = "google/gemini-3-flash-preview"
+
+def get_model(model_name: str):
+    return ChatOpenAI(
+        model=model_name,
+        api_key=os.getenv("openrouter"),
+        base_url="https://openrouter.ai/api/v1",
+        default_headers={
+            "HTTP-Referer": "https://ai_chatbot.github.io/",
+            "X-Title": "AI Judge LangChain",
+        }
+    )
+
+model_a = get_model(MODEL_A_NAME)
+model_b = get_model(MODEL_B_NAME)
+model_c = get_model(MODEL_C_NAME)
+model_judge = get_model(MODEL_JUDGE_NAME)
+```
+
+## 3. Define the Chains and Workflow
+
+Using LangChain Expression Language (LCEL), we can easily define parallel execution and sequential steps.
+
+```{python}
+# Step 1: Query models in parallel
+# We use RunnableParallel to run model_a, model_b, and model_c at the same time.
+system_prompt = "If you do not know the answer then reply I am not sure."
+prompt_template = ChatPromptTemplate.from_messages([
+    ("system", system_prompt),
+    ("user", "{question}")
+])
+
+parallel_responses = RunnableParallel(
+    answer_a=(prompt_template | model_a | StrOutputParser()),
+    answer_b=(prompt_template | model_b | StrOutputParser()),
+    answer_c=(prompt_template | model_c | StrOutputParser()),
+    question=RunnablePassthrough()
+)
+
+# Step 2: Define the Judge Prompt
+judge_prompt = ChatPromptTemplate.from_template("""
+    You are an AI Judge. You will be presented with a question and three candidate answers (Model A, Model B, and Model C).
+    Your task is to judge the quality of the answers.
+    
+    Question: {question}
+    
+    Answer A:
+    {answer_a}
+    
+    Answer B:
+    {answer_b}
+    
+    Answer C:
+    {answer_c}
+    
+    Task:
+    1. Compare the three answers for accuracy, clarity, and completeness.
+    2. format and length of the answers are not important, focus on content quality.
+    3. Provide a short commentary.
+    4. Assign a score from 0 to 100 for Model A, Model B, and Model C.
+    5. Declare the overall winner.
+    
+    Output Format:
+    Commentary: <text>
+    Winner: <Model A or Model B or Model C>
+    Score A: <number>
+    Score B: <number>
+    Score C: <number>
+""")
+
+# Step 3: Combine everything into a full chain
+# The output of parallel_responses is a dict, which matches the input expected by judge_prompt
+full_chain = parallel_responses | {
+    "judgment": judge_prompt | model_judge | StrOutputParser(),
+    "answer_a": lambda x: x["answer_a"],
+    "answer_b": lambda x: x["answer_b"],
+    "answer_c": lambda x: x["answer_c"],
+    "question": lambda x: x["question"]
+}
+```
+
+## 4. Execution
+
+Finally, we run the chain with a sample question.
+
+```{python}
+#| output: true
+input_question = "What is the AI advantage of using transformer architectures over traditional RNNs in natural language processing tasks?"
+
+print(f"--- Running Workflow for Question: {input_question} ---")
+
+# Execute the chain
+result = full_chain.invoke({"question": input_question})
+```
+
+## 5. Display Results
+
+```{python}
+#| output: true
+print("\n" + "="*40)
+print(f"QUESTION: {result['question']}")
+print("="*40)
+```
+
+### Model A
+
+```{python}
+print(f"MODEL: {MODEL_A_NAME}")
+print(f"\n[Model A]:\n{result.get('answer_a', 'No response')}") 
+```
+
+### Model B
+
+```{python}
+#| output: true
+print(f"MODEL: {MODEL_B_NAME}")
+print(f"\n[Model B]:\n{result.get('answer_b', 'No response')}")
+print("="*40)
+```
+
+### Model C
+
+```{python}
+#| output: true
+print(f"MODEL: {MODEL_C_NAME}")
+print(f"\n[Model C]:\n{result.get('answer_c', 'No response')}")
+print("="*40)
+```
+
+### AI Judge Verdict
+
+```{python}
+#| output: true
+print("\n>>> JUDGE'S VERDICT <<<")
+print(f"MODEL_A: {MODEL_A_NAME}")
+print(f"MODEL_B: {MODEL_B_NAME}")
+print(f"MODEL_C: {MODEL_C_NAME}")
+print(f"JUDGE:   {MODEL_JUDGE_NAME}")
+print("=====")
+print(result['judgment'])
+```
+
+# n8n
+
+
+![](images/clipboard-1254380001.png)
+
+
+## json file
+
+```{python}
+#| eval: false
+{
+  "name": "AI Judge Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "question-field",
+              "name": "question",
+              "value": "what is AI?",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "30f77dc6-8e05-4ddb-8902-1638b09abe7b",
+      "name": "Set Question1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  \"model\": \"openai/gpt-oss-120b:free\",\n  \"messages\": [\n    {\"role\": \"system\", \"content\": \"If you do not know the answer then reply I am not sure.\"},\n    {\"role\": \"user\", \"content\": $json.question}\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "104becd7-9b3d-4297-b4ab-47b1df1abd71",
+      "name": "Model A",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        -160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Lf6835mjFnfNIqw6",
+          "name": "Header Auth account 2"
+        },
+        "httpBearerAuth": {
+          "id": "KFNalQ91U3mlnQks",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  \"model\": \"openai/gpt-oss-20b\",\n  \"messages\": [\n    {\"role\": \"system\", \"content\": \"If you do not know the answer then reply I am not sure.\"},\n    {\"role\": \"user\", \"content\": $json.question}\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "2c4d3906-bcd3-4fc6-b983-4e9e494e476f",
+      "name": "Model B",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        16
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Lf6835mjFnfNIqw6",
+          "name": "Header Auth account 2"
+        },
+        "httpBearerAuth": {
+          "id": "KFNalQ91U3mlnQks",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  \"model\": \"arcee-ai/trinity-large-preview:free\",\n  \"messages\": [\n    {\"role\": \"system\", \"content\": \"If you do not know the answer then reply I am not sure.\"},\n    {\"role\": \"user\", \"content\": $json.question}\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "3f5e4a8b-c9d2-4ab7-a123-456789012345",
+      "name": "Model C",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -480,
+        192
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Lf6835mjFnfNIqw6",
+          "name": "Header Auth account 2"
+        },
+        "httpBearerAuth": {
+          "id": "KFNalQ91U3mlnQks",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "map-a",
+              "name": "answer_a",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bb423cd5-28ff-47e5-8925-492143d26228",
+      "name": "Set Answer A1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "map-b",
+              "name": "answer_b",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "591d8be5-132d-45a2-a69d-455467da46e5",
+      "name": "Set Answer B1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "map-c",
+              "name": "answer_c",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7a8b9c0d-1e2f-4a3b-8c4d-5e6f7a8b9c0d",
+      "name": "Set Answer C1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "merge-ab-node-id",
+      "name": "Merge AB",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -32,
+        -72
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "2c89b328-cac3-4322-bcf6-b8ae5f9c0af2",
+      "name": "Merge Answers1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        160,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  \"model\": \"google/gemini-3-flash-preview\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"You are an AI Judge. You will be presented with a question and three candidate answers (Model A, Model B, and Model C).\\nYour task is to judge the quality of the answers.\\n\\nQuestion: \" + $(\"Set Question1\").first().json.question + \"\\n\\nAnswer A:\\n\" + ($json.answer_a || \"No answer provided\") + \"\\n\\nAnswer B:\\n\" + ($json.answer_b || \"No answer provided\") + \"\\n\\nAnswer C:\\n\" + ($json.answer_c || \"No answer provided\") + \"\\n\\nTask:\\n1. Compare the three answers for accuracy, clarity, and completeness.\\n2. format and length of the answers are not important, focus on content quality.\\n3. Provide a short commentary.\\n4. Assign a score from 0 to 100 for Model A, Model B, and Model C.\\n5. Declare the overall winner.\\n\\nOutput Format:\\nCommentary: <text>\\nWinner: <Model A or Model B or Model C>\\nScore A: <number>\\nScore B: <number>\\nScore C: <number>\"\n    }\n  ]\n}) }}",
+        "options": {}
+      },
+      "id": "1d6171c9-4800-4f25-97a0-c029053e1ddc",
+      "name": "AI Judge1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        368,
+        16
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Lf6835mjFnfNIqw6",
+          "name": "Header Auth account 2"
+        },
+        "httpBearerAuth": {
+          "id": "KFNalQ91U3mlnQks",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "final-result",
+              "name": "verdict",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "model-a-ans",
+              "name": "answer_a",
+              "value": "={{ $node[\"Merge Answers1\"].json.answer_a }}",
+              "type": "string"
+            },
+            {
+              "id": "model-b-ans",
+              "name": "answer_b",
+              "value": "={{ $node[\"Merge Answers1\"].json.answer_b }}",
+              "type": "string"
+            },
+            {
+              "id": "model-c-ans",
+              "name": "answer_c",
+              "value": "={{ $node[\"Merge Answers1\"].json.answer_c }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eae7f7bf-07fc-4250-b628-1a422cfbbe12",
+      "name": "Final Output1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        16
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Set Question1": {
+      "main": [
+        [
+          {
+            "node": "Model A",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Model B",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Model C",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model A": {
+      "main": [
+        [
+          {
+            "node": "Set Answer A1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model B": {
+      "main": [
+        [
+          {
+            "node": "Set Answer B1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model C": {
+      "main": [
+        [
+          {
+            "node": "Set Answer C1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Answer A1": {
+      "main": [
+        [
+          {
+            "node": "Merge AB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Answer B1": {
+      "main": [
+        [
+          {
+            "node": "Merge AB",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Set Answer C1": {
+      "main": [
+        [
+          {
+            "node": "Merge Answers1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge AB": {
+      "main": [
+        [
+          {
+            "node": "Merge Answers1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Answers1": {
+      "main": [
+        [
+          {
+            "node": "AI Judge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Judge1": {
+      "main": [
+        [
+          {
+            "node": "Final Output1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "ac74f20b-72a9-49a6-8200-fd08707946ec",
+  "meta": {
+    "instanceId": "2f42f1cdfcab2c6a7bbd5cec68912930ccc0107686e3a7211ddcc09504c524d9"
+  },
+  "id": "8a_wyeYhdVZSr42SS5Z1K",
+  "tags": []
+}
+```
+:::

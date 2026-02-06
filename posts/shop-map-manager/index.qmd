@@ -1,0 +1,113 @@
+---
+title: "Shop Map Manager (店铺地图管理系统)"
+author: "Tony D"
+date: "2025-11-08"
+categories: [AI, API, map]
+image: "images/0.png"
+
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    code-copy: true
+    
+execute:
+  eval: false
+  warning: false
+---
+
+一个强大且优雅的个人店铺管理系统。无论您是在追踪心爱的咖啡馆、风景名胜，还是在规划未来的行程，该应用程序都能为您提供一个强大的可视化和数据管理平台。
+
+在线演示 (Streamlit): [https://china-map.streamlit.app](https://china-map.streamlit.app) (Vercel): [https://china-mapping.vercel.app/](https://china-mapping.vercel.app/)
+
+
+
+::: {.panel-tabset}
+ 
+## 地图视图
+![](images/Picture1.png){width="100%"}
+
+
+## 表格视图
+![](images/Picture2.png){width="100%"}
+
+## 店铺照片
+![](images/Picture3.png){width="100%"}
+
+:::
+
+
+
+## 核心架构演变：双模式存储
+
+本项目最重要的更新是引入了 **双数据存储模式**，同时兼顾了隐私和便携性：
+
+-   **本地模式**：数据安全地存储在本地 `shops.csv` 文件中。适合无需任何配置的快速使用。
+-   **云端模式**：利用 **Supabase** 进行跨设备的实时同步。让您的旅程记录随行。
+
+## 功能特性
+
+-   **🔍 无限探索**：无缝集成 **高德地图 (Amap) API**。一键搜索并添加任何地点到您的收藏。
+-   **🎨 动态可视化**：基于 **Folium** 的交互式地图，具有以下特色：
+    *   针对不同类别的自定义图标（咖啡、餐饮、风景等）。
+    *   直观的颜色编码：**红色** 表示 “已去过”，**绿色** 表示 “想去”。
+-   **📸 视觉记忆**：（云端模式）为每个地点拍摄并上传多张照片，安全托管在 Supabase Storage。
+-   **⭐ 深度洞察**：不仅记录地点。还可以存储星级评分 (1-5)、个人笔记和访问时间戳。
+-   **⚡ 实时过滤**：根据行程类型或访问状态即时过滤视图，专注于您关心的内容。
+
+## 技术栈
+
+| 组件 | 技术 |
+|---|---|
+| **前端** | [Streamlit](https://streamlit.io/) |
+| **地图** | [Folium](https://python-visualization.github.io/folium/) |
+| **数据库/认证** | [Supabase](https://supabase.com/) |
+| **API** | [高德地图 API](https://lbs.amap.com/) |
+| **数据逻辑** | Python & Pandas |
+
+## 快速上手
+
+### 1. 安装
+
+```bash
+git clone https://github.com/JCwinning/map_app.git
+cd map_app
+pip install -r requirements.txt
+```
+
+### 2. 环境配置
+
+在根目录下创建一个 `.env` 文件：
+
+```env
+# 必填
+GAODE_API_KEY=您的密钥
+
+# 可选：用于云端模式
+SUPABASE_URL=您的 supabase url
+SUPABASE_KEY=您的 supabase anon 密钥
+```
+
+### 3. 启动
+
+```bash
+streamlit run app.py
+```
+
+## 数据管理
+
+无论是存储在扁平的 CSV 还是关系型的 Supabase 表中，该应用都能优雅地处理复杂的数据结构：
+
+| 列名 | 说明 |
+|---|---|
+| `shop_name` | 地点名称 |
+| `visit_status` | 当前状态 (已去过 / 想去) |
+| `rating` | 您的个人星级评分 (1-5) |
+| `shop_type` | 类别 (例如: 咖啡, 零售, 风景) |
+| `images` | (云端模式) 托管图像的 URL 数组 |
+
+---
+
+## 结论
+
+**Shop Map Manager** 已从一个简单的 CSV 可视化工具演变为一个全面的个人旅行和探索伴侣。通过连接本地的便捷性与云端的强大功能，它为现代探索者提供了极致的灵活性。

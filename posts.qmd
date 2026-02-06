@@ -1,0 +1,22 @@
+---
+title: "所有文章"
+listing:
+  contents: posts
+  type: table
+  sort: "date desc"
+  page-size: 100
+  categories: false
+  fields: [image, date, title, categories]
+  filter-ui: [date, title, categories]
+  
+---
+
+
+```{r}
+#| echo: false
+folder <- "./posts"
+files <-  list.files(folder, all.files = FALSE, full.names = TRUE)
+#length(files)
+```
+
+截至 `{r} Sys.Date()`。文章总数：`{r} length(files)` 

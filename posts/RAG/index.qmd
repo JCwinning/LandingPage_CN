@@ -1,0 +1,1042 @@
+---
+title: "R 和 Python 中的检索增强生成 (RAG)"
+author: "Tony D"
+date: "2025-11-02"
+categories: [AI, API, tutorial]
+image: "images.png"
+
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    code-copy: true
+
+execute:
+
+  warning: false
+---
+
+
+```{r setup, include=FALSE}
+library(reticulate)
+
+# Use Python 3.13
+use_python("/Library/Frameworks/Python.framework/Versions/3.13/bin/python3", required = TRUE)
+
+# Install required packages
+py_install(c("openai", "langchain-core", "langchain-chroma", "langchain-community", "langchain-openai", "markitdown", "beautifulsoup4", "python-dotenv", "llama-index", "llama-index-vector-stores-duckdb"), pip = TRUE)
+
+# Verify Python
+py_config()
+```
+
+
+
+# 简介
+
+检索增强生成 (Retrieval-Augmented Generation, RAG) 是一种强大的技术，它将大型语言模型 (LLM) 的生成能力与信息检索的精准性相结合。通过将 LLM 的响应锚定在外部、可验证的数据中，RAG 减少了幻觉，并使模型能够回答关于特定、私有或最新信息的问题。
+
+在本教程中，我们将使用 R 和 Python 构建一个 RAG 系统。
+
+在 R 中，我们将利用 `ragnar` 包处理 RAG 工作流，并使用 `ellmer` 提供聊天界面。
+
+在 Python 中，我们将使用 `LangChain` 构建 RAG 流水线，使用 `ChromaDB` 作为向量数据库，并使用 `OpenAI` 进行模型交互。
+
+我们的目标是创建一个系统，通过爬取 OpenRouter API 的文档，来回答与其相关的问题。
+
+# 数据采集
+
+::: {.panel-tabset}
+
+
+## R
+
+首先，我们需要为知识库收集数据。我们将使用 `rvest` 包从 OpenRouter 文档中爬取 URL。这将为我们提供待接入的页面列表。
+
+
+```{r}
+library(ragnar)
+library(ellmer)
+library(dotenv)
+load_dot_env(file = ".env")
+```
+
+```{r}
+
+library(rvest)
+
+# 待爬取的 URL
+url <- "https://openrouter.ai/docs/quickstart"
+
+# 读取页面的 HTML 内容
+page <- read_html(url)
+
+# 提取所有带有 href 的 <a> 标签
+links <- page %>%
+    html_nodes("a") %>%
+    html_attr("href")
+
+# 移除空值和重复项
+links <- unique(na.omit(links))
+
+# 可选：仅保留完整 URL
+links_full <- paste0("https://openrouter.ai", links[grepl("^/docs/", links)])
+
+# 打印所有链接
+print(links_full)
+```
+
+
+## Python 
+
+首先，我们需要为知识库收集数据。我们将使用 `requests` 和 `BeautifulSoup` 从 OpenRouter 文档中爬取 URL。这将为我们提供待接入的页面列表。
+
+```{python}
+import sys
+print(sys.executable)
+```
+
+```{python}
+
+import requests
+from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+import os
+from markitdown import MarkItDown
+from io import BytesIO
+import re
+
+# 加载环境变量
+load_dotenv()
+
+# 辅助函数
+def fetch_html(url: str) -> bytes:
+    """从 URL 获取 HTML 内容并以字节形式返回。"""
+    resp = requests.get(url)
+    resp.raise_for_status()
+    return resp.content
+
+def html_to_markdown(html_bytes: bytes) -> str:
+    """使用 MarkItDown 将 HTML 字节转换为 Markdown。"""
+    md = MarkItDown()
+    stream = BytesIO(html_bytes)
+    result = md.convert_stream(stream, mime_type="text/html")
+    return result.markdown
+
+def save_markdown(md_content: str, output_path: str):
+    """将 Markdown 内容保存到文件。"""
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(md_content)
+
+def sanitize_filename(filename: str) -> str:
+    """清理 URL 以创建合法的文件名。"""
+    filename = re.sub(r'^https?://[^/]+', '', filename)
+    filename = re.sub(r'[^\w\-_.]', '_', filename)
+    filename = filename.strip('_')
+    if not filename.endswith('.md'):
+        filename += '.md'
+    return filename
+
+# 待爬取的 URL
+url = "https://openrouter.ai/docs/quickstart"
+
+# 读取页面的 HTML 内容
+response = requests.get(url)
+soup = BeautifulSoup(response.content, 'html.parser')
+
+# 提取所有带有 href 的 <a> 标签
+links = [a['href'] for a in soup.find_all('a', href=True)]
+
+# 移除重复项
+links = list(set(links))
+
+# 仅保留文档的完整 URL
+links_full = [f"https://openrouter.ai{link}" for link in links if link.startswith("/docs/")]
+
+# 显式添加 FAQ
+links_full.append("https://openrouter.ai/docs/faq")
+links_full = list(set(links_full))
+
+# 打印所有链接
+print(f"找到 {len(links_full)} 个文档 URL")
+print(links_full)
+```
+
+
+:::
+
+# 将网页内容保存到本地
+
+::: {.panel-tabset}
+
+## R
+
+为了进行语义搜索，我们需要将文本数据存储为向量（嵌入）。我们将使用 `DuckDB` 作为本地向量数据库。我们还需要一个嵌入模型将文本转换为向量。在这里，我们配置 `ragnar` 通过 OpenAI 兼容的 API (SiliconFlow) 使用特定的嵌入模型。
+
+
+```{r}
+#| eval: false
+# pages <- ragnar_find_links(base_url)
+pages <- links_full
+store_location <- "openrouter.duckdb"
+
+store <- ragnar_store_create(
+    store_location,
+    overwrite = TRUE,
+    embed = \(x) ragnar::embed_openai(x,
+        model = "BAAI/bge-m3",
+        base_url = "https://api.siliconflow.cn/v1",
+        api_key = Sys.getenv("siliconflow")
+    )
+)
+```
+
+
+在存储初始化后，我们现在可以接入数据。我们遍历之前爬取的页面列表。对于每个页面，我们：
+1. 以 Markdown 格式读取内容。
+2. 将内容拆分为较小的块（约 600 字符）。
+3. 将这些块插入到我们的向量数据库中。
+
+此过程构建了我们将要搜索的索引。
+
+
+```{r}
+# page="https://openrouter.ai/docs/faq"
+# chunks <- page |>read_as_markdown() |>markdown_chunk(target_size = 2000)
+# ragnar_chunks_view(chunks)
+```
+
+
+```{r}
+#| eval: false
+for (page in pages) {
+    message("正在接入: ", page)
+    print(page)
+    chunks <- page |>
+        read_as_markdown() |>
+        markdown_chunk(target_size = 2000)
+    # print(chunks)
+    # print('chunks done')
+    ragnar_store_insert(store, chunks)
+    print("插入完成")
+}
+```
+
+
+
+```{r}
+#| eval: false
+ragnar_store_build_index(store)
+
+# 释放连接以供后续 Python 代码使用
+rm(store)
+gc()
+```
+
+
+
+## Python DuckDB
+```{python}
+#| eval: false
+import os
+from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, StorageContext, Settings
+from llama_index.vector_stores.duckdb import DuckDBVectorStore
+from llama_index.embeddings.openai import OpenAIEmbedding
+
+# --- 1. 配置 ---
+
+# 确保 API 密钥可用
+openrouter_api_key = os.getenv("OPENROUTER_API_KEY") # 或直接粘贴字符串
+
+# 初始化指向 OpenRouter 的嵌入模型
+# 我们使用 OpenAI 类，因为 OpenRouter 使用了 OpenAI 兼容的 API 结构
+embed_model = OpenAIEmbedding(
+    api_key=openrouter_api_key,
+    base_url="https://openrouter.ai/api/v1",
+    model="qwen/qwen3-embedding-8b"  
+)
+
+# 更新全局设置，以便 LlamaIndex 知道使用此模型
+Settings.embed_model = embed_model
+Settings.chunk_size = 2000
+Settings.chunk_overlap = 200
+# --- 2. 接入与索引 ---
+
+# 加载数据
+documents = SimpleDirectoryReader("markdown_docs").load_data()
+
+# 初始化 DuckDB 向量数据库
+vector_store = DuckDBVectorStore("openrouter.duckdb", persist_dir="./persist/")
+storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+# 创建索引
+# 这将自动使用 Settings 中定义的 Qwen 嵌入
+index = VectorStoreIndex.from_documents(
+    documents, 
+    storage_context=storage_context
+)
+
+```
+
+
+
+
+
+## Python Chroma
+
+为了进行语义搜索，我们需要将文本数据转换为向量（嵌入）进行存储。我们将使用 `ChromaDB` 作为本地向量数据库。我们还需要一个嵌入模型把文本转为向量。在这里，我们配置了一个自定义的 `OpenRouterEmbeddings` 类，通过 OpenRouter API 使用 `qwen/qwen3-embedding-8b` 模型。
+
+
+```{python}
+#| eval: false
+from openai import OpenAI
+from langchain_core.embeddings import Embeddings
+from langchain_chroma import Chroma
+from typing import List
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# 针对 OpenRouter API 的自定义嵌入类
+class OpenRouterEmbeddings(Embeddings):
+    """针对 OpenRouter API 的自定义嵌入类。"""
+    
+    def __init__(self, api_key: str, model: str = "text-embedding-3-small"):
+        self.client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key,
+        )
+        self.model = model
+    
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        """对文档列表进行嵌入。"""
+        response = self.client.embeddings.create(
+            extra_headers={
+                "HTTP-Referer": "https://ai-blog.com",
+                "X-Title": "AI Blog RAG",
+            },
+            model=self.model,
+            input=texts,
+            encoding_format="float"
+        )
+        return [item.embedding for item in response.data]
+    
+    def embed_query(self, text: str) -> List[float]:
+        """对单个查询进行嵌入。"""
+        response = self.client.embeddings.create(
+            extra_headers={
+                "HTTP-Referer": "https://ai-blog.com",
+                "X-Title": "AI Blog RAG",
+            },
+            model=self.model,
+            input=text,
+            encoding_format="float"
+        )
+        return response.data[0].embedding
+
+# 获取 OpenRouter API 密钥
+openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+if not openrouter_api_key:
+    raise ValueError("未在环境变量中找到 OPENROUTER_API_KEY")
+
+# 使用 OpenRouter 创建嵌入实例
+embeddings = OpenRouterEmbeddings(
+    api_key=openrouter_api_key,
+    model="qwen/qwen3-embedding-8b"
+)
+
+# 定义向量数据库位置
+persist_directory = "chroma_db_data"
+```
+
+
+
+
+在存储初始化后，我们现在可以接入数据。我们遍历之前保存的 Markdown 文件。对于每个文件，我们：
+1. 加载内容。
+2. 使用 `RecursiveCharacterTextSplitter` 将内容拆分为较小的块（约 2000 字符）。
+3. 从这些块中创建一个新的 `Chroma` 向量数据库。
+
+此过程构建了我们将要搜索的索引。
+
+
+
+```{python}
+#| eval: false
+from langchain_core.documents import Document
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+import shutil
+
+# 加载 Markdown 文件的辅助函数
+def load_markdown_files(directory: str) -> list[Document]:
+    """从目录加载所有 Markdown 文件并创建 Document 对象。"""
+    documents = []
+    if not os.path.exists(directory):
+        return documents
+        
+    for filename in os.listdir(directory):
+        if filename.endswith('.md'):
+            filepath = os.path.join(directory, filename)
+            with open(filepath, 'r', encoding='utf-8') as f:
+                content = f.read()
+                doc = Document(
+                    page_content=content,
+                    metadata={
+                        "source": filename,
+                        "filepath": filepath
+                    }
+                )
+                documents.append(doc)
+    return documents
+
+# 创建 Markdown 文件的输出目录
+output_dir = "markdown_docs"
+os.makedirs(output_dir, exist_ok=True)
+
+# 将每个 URL 转换为 Markdown 并保存
+for i, link_url in enumerate(links_full, 1):
+    try:
+        print(f"正在处理 {i}/{len(links_full)}: {link_url}")
+        html_content = fetch_html(link_url)
+        markdown_content = html_to_markdown(html_content)
+        filename = sanitize_filename(link_url)
+        output_path = os.path.join(output_dir, filename)
+        save_markdown(markdown_content, output_path)
+        print(f"  ✓ 已保存至 {output_path}")
+    except Exception as e:
+        print(f"  ✗ 处理 {link_url} 时出错: {str(e)}")
+
+# 加载 Markdown 文档
+documents = load_markdown_files(output_dir)
+print(f"\n加载了 {len(documents)} 个 Markdown 文档")
+
+# 将文档拆分为块
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=2000,
+    chunk_overlap=200,
+    length_function=len,
+    is_separator_regex=False,
+)
+
+splits = text_splitter.split_documents(documents)
+print(f"拆分为 {len(splits)} 个块")
+```
+
+
+```{python}
+#| eval: false
+# 如果数据库已存在，则将其移除
+if os.path.exists(persist_directory):
+    print(f"正在移除位于 {persist_directory} 的现有数据库...")
+    shutil.rmtree(persist_directory)
+
+# 创建新的向量数据库
+vectorstore = Chroma.from_documents(
+    documents=splits,
+    embedding=embeddings,
+    persist_directory=persist_directory
+)
+
+print(f"\n✓ 成功创建了包含 {len(splits)} 个块的 ChromaDB！")
+print(f"✓ 数据库已保存至: {persist_directory}")
+```
+
+
+
+:::
+
+
+
+
+
+
+
+
+
+
+# 检索
+
+::: {.panel-tabset}
+
+## R
+
+现在我们的知识库已经填充完毕，我们可以测试检索系统。我们可以提出一个特定的问题，例如“什么是模型变体？(What are model variants?)”，并查询存储库以查看哪些文本块最相关。这确认了我们的嵌入和搜索是否正常工作。
+
+### 问题：什么是模型变体？(What are model variants?)
+
+RAG 结果：
+
+```{r}
+
+store_location <- "openrouter.duckdb"
+text <- "What are model variants?"
+
+relevant_chunks <- tryCatch({
+    store <- ragnar_store_connect(store_location)
+    ragnar_retrieve(store, text, top_k = 3)
+}, error = function(e) {
+    message("⚠️ 无法连接到 DuckDB (可能被锁定): ", e$message)
+    return(NULL)
+})
+
+if (!is.null(relevant_chunks)) {
+    cat("检索到", nrow(relevant_chunks), "个文本块：\n\n")
+    for (i in seq_len(nrow(relevant_chunks))) {
+        cat(sprintf("--- 块 %d ---\n%s\n\n", i, relevant_chunks$text[i]))
+    }
+} else {
+    cat("知识库当前不可用（由于数据库锁定）。")
+}
+
+# 释放连接以避免文件锁定
+if (exists("store")) {
+    rm(store)
+    gc()
+}
+```
+
+
+```{r}
+# ragnar_store_inspect(store)
+#ragnar_chunks_view(chunks)
+```
+
+## Python DuckDB
+
+在 Python 中，我们可以使用 `LlamaIndex` 与我们的 DuckDB 向量数据库进行交互。在此步骤中，我们将配置嵌入模型并为查询检索前几个相关块，并将它们保存到文件中以供检查。我们暂不使用 LLM 进行生成，仅专注于验证检索质量。
+
+### 问题：什么是模型变体？(What are model variants?)
+
+RAG 结果：
+
+```{python}
+
+import os
+import sys
+print(f"Python 可执行文件路径: {sys.executable}")
+print(f"Python 路径 (sys.path): {sys.path}")
+from typing import Any, List
+from openai import OpenAI
+from llama_index.core import VectorStoreIndex, Settings
+from llama_index.core.embeddings import BaseEmbedding
+from llama_index.vector_stores.duckdb import DuckDBVectorStore
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
+
+# 确保 API 密钥可用
+openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+
+# 针对 LlamaIndex 的自定义 OpenRouter 嵌入类
+class OpenRouterEmbedding(BaseEmbedding):
+    """与 LlamaIndex 兼容的 OpenRouter API 自定义嵌入类。"""
+    
+    def __init__(
+        self,
+        api_key: str,
+        model: str = "qwen/qwen3-embedding-8b",
+        **kwargs: Any
+    ):
+        super().__init__(**kwargs)
+        self._client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key,
+        )
+        self._model = model
+    
+    def _get_query_embedding(self, query: str) -> List[float]:
+        """获取查询字符串的嵌入向量。"""
+        response = self._client.embeddings.create(
+            extra_headers={
+                "HTTP-Referer": "https://ai-blog.com",
+                "X-Title": "AI Blog RAG",
+            },
+            model=self._model,
+            input=query,
+            encoding_format="float"
+        )
+        return response.data[0].embedding
+    
+    def _get_text_embedding(self, text: str) -> List[float]:
+        """获取文本字符串的嵌入向量。"""
+        return self._get_query_embedding(text)
+    
+    async def _aget_query_embedding(self, query: str) -> List[float]:
+        """异步版本的 get_query_embedding。"""
+        return self._get_query_embedding(query)
+    
+    async def _aget_text_embedding(self, text: str) -> List[float]:
+        """异步版本的 get_text_embedding。"""
+        return self._get_text_embedding(text)
+
+# 1. 使用自定义 OpenRouter 类配置嵌入模型
+embed_model = OpenRouterEmbedding(
+    api_key=openrouter_api_key,
+    model="qwen/qwen3-embedding-8b"
+)
+
+# 2. 应用设置
+Settings.embed_model = embed_model
+
+# 加载与检索
+# 加载现有的 DuckDB 向量数据库
+print("正在从 openrouter.duckdb 加载向量数据库...")
+try:
+    vector_store = DuckDBVectorStore(database_name="openrouter.duckdb", persist_dir="./persist/", read_only=True)
+    index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
+except Exception as e:
+    print(f"⚠️ 无法加载向量数据库 (可能被锁定): {e}")
+    # 创建一个空索引作为备选，或者跳过
+    index = None
+
+# 定义查询
+query = "What are model variants?"
+print(f"\n{'='*60}")
+print(f"查询问题: '{query}'")
+print(f"{'='*60}\n")
+
+# 检索前 3 个相关块
+if index:
+    retriever = index.as_retriever(similarity_top_k=5)
+    nodes = retriever.retrieve(query)
+else:
+    nodes = []
+
+# 打印详细检索信息
+print(f"从 DuckDB 中检索到 {len(nodes)} 个文本块：\n")
+for i, node in enumerate(nodes, 1):
+    print(f"{'─'*60}")
+    print(f"块 {i}")
+    print(f"{'─'*60}")
+
+    # 打印相似度分数
+    if hasattr(node, 'score'):
+        print(f"相似度分数: {node.score:.4f}")
+
+    # 打印元数据
+    if hasattr(node, 'metadata') and node.metadata:
+        print(f"元数据:")
+        for key, value in node.metadata.items():
+            print(f"  - {key}: {value}")
+
+    # 打印文本内容（截断显示）
+    text_preview = node.text[:500] + "..." if len(node.text) > 500 else node.text
+    print(f"\n内容预览:\n{text_preview}\n")
+
+# Save retrieved chunks to a markdown file for easy inspection
+# with open("retriever.md", "w", encoding="utf-8") as f:
+#     f.write(f"# Query: {query}\n\n")
+#     f.write(f"# Retrieved {len(nodes)} chunks from openrouter.duckdb\n\n")
+#     for i, node in enumerate(nodes, 1):
+#         f.write(f"{'─'*60}\n")
+#         f.write(f"## Chunk {i}\n\n")
+#         if hasattr(node, 'score'):
+#             f.write(f"**Similarity Score:** {node.score:.4f}\n\n")
+#         if hasattr(node, 'metadata') and node.metadata:
+#             f.write(f"**Metadata:**\n")
+#             for key, value in node.metadata.items():
+#                 f.write(f"- {key}: {value}\n")
+#             f.write(f"\n")
+#         f.write(f"{node.text}\n\n")
+```
+
+
+
+
+## Python Chroma
+
+现在我们的知识库已经填充完毕，我们可以测试检索系统。我们可以提出一个特定的问题，例如“什么是模型变体？ (What are model variants?)”，并查询 `Chroma` 存储库以查看哪些文本块最相关。这确认了我们的嵌入和搜索是否正常工作。
+
+### 问题：什么是模型变体？ (What are model variants?)
+
+RAG 结果：
+
+```{python}
+from openai import OpenAI
+from langchain_core.embeddings import Embeddings
+from langchain_chroma import Chroma
+from typing import List
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# 针对 OpenRouter API 的自定义嵌入类
+class OpenRouterEmbeddings(Embeddings):
+    """针对 OpenRouter API 的自定义嵌入类。"""
+    
+    def __init__(self, api_key: str, model: str = "qwen/qwen3-embedding-8b"):
+        self.client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key,
+        )
+        self.model = model
+    
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        """对文档列表进行嵌入。"""
+        response = self.client.embeddings.create(
+            extra_headers={
+                "HTTP-Referer": "https://ai-blog.com",
+                "X-Title": "AI Blog RAG",
+            },
+            model=self.model,
+            input=texts,
+            encoding_format="float"
+        )
+        return [item.embedding for item in response.data]
+    
+    def embed_query(self, text: str) -> List[float]:
+        """对单个查询进行嵌入。"""
+        response = self.client.embeddings.create(
+            extra_headers={
+                "HTTP-Referer": "https://ai-blog.com",
+                "X-Title": "AI Blog RAG",
+            },
+            model=self.model,
+            input=text,
+            encoding_format="float"
+        )
+        return response.data[0].embedding
+
+# 获取 OpenRouter API 密钥
+openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+if not openrouter_api_key:
+    raise ValueError("未在环境变量中找到 OPENROUTER_API_KEY")
+
+# 使用 OpenRouter 创建嵌入实例
+embeddings = OpenRouterEmbeddings(
+    api_key=openrouter_api_key,
+    model="qwen/qwen3-embedding-8b"
+)
+
+# 定义向量数据库位置
+persist_directory = "chroma_db_data"
+
+# 加载现有的向量数据库
+vectorstore = Chroma(
+    persist_directory=persist_directory,
+    embedding_function=embeddings
+)
+
+# 测试查询
+query = "What are model variants?"
+
+# 执行相似度搜索
+results = vectorstore.similarity_search(query, k=5)
+
+print(f"\n查询问题: '{query}'")
+print(f"找到 {len(results)} 个相关块：\n")
+
+for i, doc in enumerate(results, 1):
+    print(f"结果 {i}:")
+    print(f"来源: {doc.metadata.get('source', '未知')}")
+    print(f"内容预览: {doc.page_content[:800]}...")
+    
+```
+
+:::
+
+
+
+# 结合 RAG 进行聊天 (Chat with RAG)
+
+::: {.panel-tabset}
+
+## R
+
+最后一个环节是将这种检索能力连接到聊天界面。我们使用 `ellmer` 创建一个聊天客户端。关键在于，我们使用 `ragnar_register_tool_retrieve` 注册一个“检索工具”。这使 LLM 能够在需要信息回答用户问题时，自主查询我们的向量数据库。
+
+我们还提供了一个系统提示词，指示模型始终检查知识库并引用其来源。
+
+
+```{r}
+
+library(ellmer)
+library(dotenv)
+library(ragnar)
+load_dot_env(file = ".env")
+
+chat <- chat_openrouter(
+    api_key = Sys.getenv("OPENROUTER_API_KEY"),
+    model = "openai/gpt-oss-120b",
+    system_prompt = glue::trim("
+  你是一个负责问答任务的助手。请保持回复简练。
+
+  在回复之前，请从知识库中检索相关素材。引用或转述段落，清晰地标注哪些是你自己的话，哪些是来源。
+  为你引用的每个来源提供一个有效的链接，以及任何其他相关的链接。
+  除非你已经检索并引用了来源，否则不要回答。如果你没有找到相关信息，请说“我在知识库中找不到任何相关信息”。
+    ")
+)
+
+# 尝试连接存储并注册工具
+store_connected <- FALSE
+tryCatch({
+    store <- ragnar_store_connect("openrouter.duckdb")
+    chat <- chat |> ragnar_register_tool_retrieve(store, top_k = 3)
+    store_connected <- TRUE
+}, error = function(e) {
+    message("⚠️ 无法连接到 DuckDB 进行工具注册: ", e$message)
+})
+```
+
+### 问题：什么是模型变体？(What are model variants?)
+
+```{r}
+#| results: asis
+if (store_connected) {
+    chat$chat("What are model variants?")
+    # 聊天结束后立即释放锁
+    rm(store)
+    gc()
+} else {
+    cat("由于数据库锁定，R 聊天功能暂时不可用。")
+}
+```
+
+
+## Python chatlas
+
+我们还可以使用 `chatlas` 库来创建一个聊天界面。在这里，我们定义了一个自定义工具 `retrieve_trusted_content`，用于查询我们的 DuckDB 索引。然后我们将这个工具注册到聊天模型中，使其能够在回答用户问题时引入相关信息。
+
+### 问题：什么是模型变体？(What are model variants?)
+
+
+```{python}
+import os
+from typing import Any, List
+from openai import OpenAI
+import chatlas as ctl
+from llama_index.core import VectorStoreIndex, Settings
+from llama_index.core.embeddings import BaseEmbedding
+from llama_index.vector_stores.duckdb import DuckDBVectorStore
+from dotenv import load_dotenv
+load_dotenv()
+# 确保 API 密钥可用
+openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+
+# 针对 LlamaIndex 的自定义 OpenRouter 嵌入类
+class OpenRouterEmbedding(BaseEmbedding):
+    """与 LlamaIndex 兼容的 OpenRouter API 自定义嵌入类。"""
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str = "qwen/qwen3-embedding-8b",
+        **kwargs: Any
+    ):
+        super().__init__(**kwargs)
+        self._client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key,
+        )
+        self._model = model
+
+    def _get_query_embedding(self, query: str) -> List[float]:
+        """获取查询字符串的嵌入向量。"""
+        response = self._client.embeddings.create(
+            extra_headers={
+                "HTTP-Referer": "https://ai-blog.com",
+                "X-Title": "AI Blog RAG",
+            },
+            model=self._model,
+            input=query,
+            encoding_format="float"
+        )
+        return response.data[0].embedding
+
+    def _get_text_embedding(self, text: str) -> List[float]:
+        """获取文本字符串的嵌入向量。"""
+        return self._get_query_embedding(text)
+
+    async def _aget_query_embedding(self, query: str) -> List[float]:
+        """异步版本的 get_query_embedding。"""
+        return self._get_query_embedding(query)
+
+    async def _aget_text_embedding(self, text: str) -> List[float]:
+        """异步版本的 get_text_embedding。"""
+        return self._get_text_embedding(text)
+
+# 1. 配置嵌入模型
+embed_model = OpenRouterEmbedding(
+    api_key=openrouter_api_key,
+    model="qwen/qwen3-embedding-8b"
+)
+Settings.embed_model = embed_model
+
+# 2. 加载索引
+try:
+    vector_store = DuckDBVectorStore(database_name="openrouter.duckdb", persist_dir="./persist/", read_only=True)
+    index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
+    retriever = index.as_retriever(similarity_top_k=3)
+except Exception as e:
+    print(f"⚠️ 无法加载向量数据库: {e}")
+    index = None
+    retriever = None
+
+# 3. 定义聊天工具
+def retrieve_trusted_content(question: str) -> str:
+    """
+    在知识库中检索信任的内容来回答问题。
+    """
+    if not retriever:
+        return "知识库当前不可用（由于数据库锁定）。"
+    nodes = retriever.retrieve(question)
+    combined_text = "\n\n".join([f"Source Content {i+1}:\n{node.text}" for i, node in enumerate(nodes)])
+    return combined_text
+
+# 4. 设置聊天模型并注册工具
+chat = ctl.ChatOpenRouter(
+    model="openai/gpt-oss-120b",
+    api_key=openrouter_api_key,
+    base_url="https://openrouter.ai/api/v1",
+    system_prompt="""
+    你是一个负责问答任务助手。请保持回复简练。
+    在回复之前，始终通过 retrieve_trusted_content 工具检索相关素材。
+    """
+)
+
+chat.register_tool(retrieve_trusted_content)
+
+# 5. 执行聊天
+try:
+    response = chat.chat("What are model variants?")
+    print(response)
+except Exception as e:
+    print(f"⚠️ 聊天过程出错 (可能是显示处理问题): {e}")
+```
+
+
+## Python LangChain
+
+在 Python 的 LangChain 中，我们设置了一个完整的 RAG 流水线。这包括：
+1. **检索器 (Retriever)**：使用我们的 `Chroma` 向量数据库。
+2. **提示词模版 (Prompt Template)**：指示模型使用检索到的上下文来回答问题。
+3. **聊天模型 (Chat Model)**：使用 OpenRouter 提供的 `gpt-4o`。
+4. **输出解析器 (Output Parser)**：用于格式化最终响应。
+
+这种模块化方法是构建生产级 AI 应用程序的典型方式。
+
+### 问题：什么是模型变体？(What are model variants?)
+
+
+```{python}
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+from openai import OpenAI
+from langchain_core.embeddings import Embeddings
+from langchain_chroma import Chroma
+from typing import List
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# 针对 LangChain 的自定义 OpenRouter 嵌入类
+class OpenRouterEmbeddings(Embeddings):
+    def __init__(self, api_key: str, model: str = "qwen/qwen3-embedding-8b"):
+        self._client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key,
+        )
+        self._model = model
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        """嵌入文档列表。"""
+        response = self._client.embeddings.create(
+            model=self._model,
+            input=texts
+        )
+        return [d.embedding for d in response.data]
+
+    def embed_query(self, text: str) -> List[float]:
+        """嵌入单个查询。"""
+        response = self._client.embeddings.create(
+            model=self._model,
+            input=text
+        )
+        return response.data[0].embedding
+
+# 获取 OpenRouter API 密钥
+openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+if not openrouter_api_key:
+    raise ValueError("未在环境变量中找到 OPENROUTER_API_KEY")
+
+# 使用 OpenRouter 创建嵌入实例
+embeddings = OpenRouterEmbeddings(
+    api_key=openrouter_api_key,
+    model="qwen/qwen3-embedding-8b"
+)
+
+# 定义向量数据库位置
+persist_directory = "chroma_db_data"
+
+# 加载现有的向量数据库
+print(f"正在从 {persist_directory} 加载现有向量数据库...")
+vectorstore = Chroma(
+    persist_directory=persist_directory,
+    embedding_function=embeddings
+)
+print(f"✓ 向量数据库加载成功")
+
+# 使用 OpenRouter 初始化 LLM
+llm = ChatOpenAI(
+    model="openai/gpt-oss-120b",
+    openai_api_key=os.getenv("OPENROUTER_API_KEY"),
+    openai_api_base="https://openrouter.ai/api/v1"
+)
+
+# 创建提示词模版
+system_prompt = (
+    "你是一个负责问答任务助手。"
+    "请使用以下检索到的素材来回答问题。"
+    "如果你不知道答案，请不要胡编乱造。"
+    "最多使用三句话，并保持回复简练。"
+    "\n\n"
+    "素材: {context}"
+    "\n\n"
+    "问题: {question}"
+)
+
+prompt = ChatPromptTemplate.from_template(system_prompt)
+
+# 创建检索器
+retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+
+# 用于格式化文档的辅助函数
+def format_docs(docs):
+    return "\n\n".join(doc.page_content for doc in docs)
+
+# 使用 LCEL 构建 RAG 链
+rag_chain = (
+    {
+        "context": retriever | format_docs,
+        "question": RunnablePassthrough()
+    }
+    | prompt
+    | llm
+    | StrOutputParser()
+)
+
+print("✓ RAG 链创建成功！")
+
+# 测试 RAG 链
+question = "What are model variants?"
+
+print(f"\n查询问题: {question}")
+
+# 独立获取上下文文档以便展示
+context_docs = retriever.invoke(question)
+
+# 调用 RAG 链
+answer = rag_chain.invoke(question)
+import textwrap
+
+for line in answer.split('\n'):
+    print(textwrap.fill(line, width=80))
+```
+
+:::

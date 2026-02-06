@@ -1,0 +1,136 @@
+---
+title: "CV / 简历"
+page-layout: article
+toc: false
+---
+
+::: {.panel-tabset}
+
+# 中文
+
+<a href="段晋潮 Tony Duan简历.pdf" download class="btn btn-primary" style="margin-bottom: 1rem;">📥 下载简历</a>
+
+## 段晋潮 Tony Duan
+
+**电话:** 13609618820  
+**邮箱:** jcflyingco@outlook.com
+
+## 职业目标
+
+资深数据战略与分析专家，拥有 eBay、安永 (EY) 及汇丰银行 (HSBC) 的多元化实战经验。擅长将复杂数据集转化为可落地的业务洞见，并通过构建预测模型驱动业务目标达成。精通 AI 驱动的分析技术及交互式数据工具，致力于利用在数据运营和现代AI工程领域的深厚背景，为企业实现可扩展的业务增长。
+
+## 专业技能
+
+- AI/机器学习：Agentic Workflows (智能体工作流 langchain/langgraph/n8n), RAG (检索增强生成), LLM 集成应用(Skills/MCP), YOLO 计算机视觉
+
+- 数据科学：SQL, Python (Pandas, Plotly, Scikit-learn), R (Tidyverse, GGplot2, Tidymodels)
+
+- BI dashboard: Tableau,Power BI,Shiny
+
+- 办公工具： Excel (VBA), PowerPoint, Word
+
+
+## 工作经历
+
+### eBay | 业务管理部 分析专家 (2018-2021) / 分析经理 (2021-2023)
+
+**战略运营：** 统筹大中华区卖家的物流表现管理，确保其符合全球物流时效与合规标准。
+
+**商业智能 (BI)：** 设计并部署全维度卖家看板，实现实时业绩监控；通过精准识别供应链瓶颈，显著降低了物流延迟率。
+
+**政策制定：** 负责大中华区卖家政策的起草与执行，在维护平台生态健康度与保障卖家可持续增长之间取得战略平衡。
+
+### 安永 (EY) | 业绩改进咨询部 高级数据分析顾问 (2014-2017)
+
+**银行业务：** 为国内领先商业银行构建标准化报表框架，提升管理层决策的数据透明度；开发客户价值预测及分群模型，赋能精准 CRM 策略，提升高价值客户留存率。
+
+**保险业务：** 为头部保险公司设计产品组合推荐引擎；为国内大型寿险公司研发并部署反欺诈建模系统。
+
+### 汇丰银行 (HSBC) | 风险部 决策分析师 (2012-2013)
+
+负责亚太地区信用风险管理的分析解决方案,开发信用评分卡，并针对信用卡及房贷等多元资产组合优化风险策略。
+
+## 教育背景
+
+**麦考瑞大学 (Macquarie University)** | 悉尼，澳大利亚  
+**商学学士** (2009 - 2012)  
+专业：决策科学 (Decision Science) | 绩点：3.1 / 4.0
+
+
+
+## 语言能力
+
+英语：专业流利 | 普通话/粤语：母语
+
+## 奖项&证书
+
+- 安永 ExCEED 优秀员工奖（旨在表彰在客户服务中付出额外努力、表现远超预期并做出卓越贡献的员工）
+
+- Coursera DeepLearning.AI TensorFlow Developer Professional Certificate
+
+- Google Cloud GCP Core Infrastructure training 
+
+# English
+
+<a href="Tony Duan Resume.pdf" download class="btn btn-primary" style="margin-bottom: 1rem;">📥 Download Resume</a>
+
+## Tony Jinchao Duan
+
+**Telephone:** 13609618820  
+**Email:** jcflyingco@outlook.com
+
+## Career Objective
+
+Data-driven Strategy & Analytics professional with a proven track record at eBay, EY, and HSBC. Expert in transforming complex datasets into actionable business intelligence and create predictive models to achieve business goal. Specializing in AI-driven Analytic skills and interactive data tools. Seeking to leverage deep domain expertise in data operations and modern AI engineering to drive scalable business growth.
+
+## Technical Skills
+
+- AI/ML: Agentic Workflows(langchain/langgraph/n8n), RAG, LLM Integration(Skills/MCP), YOLO
+
+- Data Science: SQL,Python (Pandas, Plotly, Scikit-learn), R (Tidyverse, GGplot2, Tidymodels)
+
+- BI dashboard: Tableau,Power BI,Shiny
+
+- Microsoft Tools: Excel (VBA/Modeling), PowerPoint, Word
+
+
+## Employment History
+
+### eBay | Business Management | Analytics Specialist (2018-2021) / Analytics Manager (2021-2023)
+
+**Strategic Operations:** Managed shipping performance for the Greater China seller network, ensuring alignment with global logistics standards.
+
+**Business Intelligence:** Designed and deployed comprehensive seller dashboards to monitor real-time performance, significantly reducing shipping delays by identifying supply chain bottlenecks.
+
+**Policy Development:** Authored and implemented regional seller policies that balanced marketplace integrity with sustainable seller growth.
+
+### Ernst & Young | Performance Improvement Consulting | Senior Analytics Consultant (2014-2017)
+
+**Banking Sector:** Standardized reporting frameworks for a leading Chinese commercial bank, enhancing data transparency for executive stakeholders. Developed Customer Value Forecast and Segmentation models, enabling targeted CRM strategies and increasing high-value client retention.
+
+**Insurance Sector:** Designed a customer product-mix recommendation engine for a top-tier insurance provider. Developed anti-fraud modeling systems for one of the largest life insurance companies in China.
+
+### HSBC | Consumer Credit Risk | Decision Analytics Officer (2012–2013)
+
+Developed analytical solutions to manage credit risk across the Asia-Pacific region. Built credit scorecards and optimized strategies for diverse portfolios, including credit cards and home loans.
+
+## Education Background
+
+**Macquarie University** | Sydney, Australia  
+**Bachelor of Commerce** (2009 - 2012)  
+Major in Decision Science | GPA: 3.1/4.0
+
+
+## Languages
+
+English (Professional Proficiency), Mandarin (Native), Cantonese (Native)
+
+## Awards & Certificate
+
+- EY ExCEED Award(for extra effort, exceeding expectations and recognizing. Those who have gone that extra mile to serve their clients)
+
+- Coursera DeepLearning.AI TensorFlow Developer Professional Certificate
+
+- Google Cloud GCP Core Infrastructure training 
+
+:::

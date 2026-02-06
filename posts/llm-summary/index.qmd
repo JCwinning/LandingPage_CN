@@ -1,0 +1,100 @@
+---
+title: "LLM 摘要系统：多平台 AI 摘要工具"
+author: "Tony D"
+date: "2026-01-08"
+categories: [AI, Python, LLM, Open Source]
+image: "image/cover.png"
+
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    code-copy: true
+
+execute:
+  warning: false
+---
+
+# 简介
+
+在信息爆炸的时代，紧跟 YouTube、Bilibili、Spotify 和小红书等多个平台的内容可能会让人感到力不从心。**LLM Summary System** 是一个强大的统一工具，旨在通过自动下载、转写并使用最先进的大型语言模型 (LLM) 总结内容来解决这一问题。
+
+该项目提供了一种无缝体验，能够将长篇音视频内容转换为简洁、具有启发性的摘要。
+
+![](image/1.png) 
+
+
+# 主要特性
+
+该系统具备多种功能，是内容消费的强大选择：
+
+- **多平台支持**：为 YouTube、Bilibili、Spotify、小红书和小宇宙 FM 提供统一接口。
+- **智能处理**：针对大文件和转录文本自动分块，以处理长篇内容（最高支持 200 万 Token）。
+- **高质量转写**：使用 MLX Whisper（针对 Apple Silicon 优化），并具备 OpenAI Whisper 备选方案。
+- **高级摘要**：支持 15 种以上 LLM 模型（包括通义千问 Qwen、GLM、DeepSeek、GPT-4、Gemini 和 Grok）。
+- **文本转语音 (TTS)**：使用 Google Cloud TTS、Qwen 或 Gemini 将摘要重新转换为音频。
+- **搜索集成**：利用 AI 提取的关键调，自动查找相关的阅读材料。
+- **实时进度跟踪**：用户友好的 Streamlit Web 界面，提供实时更新。
+
+# 架构概览
+
+系统遵循一个流线型的工作流：
+
+```mermaid
+graph LR
+    A[URL 输入] --> B[平台检测]
+    B --> C[内容下载]
+    C --> D[音频提取]
+    D --> E[转写 - Whisper]
+    E --> F[AI 摘要生成]
+    F --> G[TTS 合成]
+    G --> H[文件输出 + Web 展示]
+```
+
+### 核心组件
+
+- **`app.py`**：主要的 Streamlit Web 界面，处理并发 URL 提交和动态排队。
+- **`download.py`**：统一的下载器，为所有支持的平台提供了全面的重试逻辑。
+- **`process.py`**：通过智能分块处理音频转写和 AI 摘要。
+- **`config.py`**：管理 LLM 模型配置和环境变量。
+- **`tts.py`**：多供应商文本转语音支持，具备基于哈希的缓存机制。
+
+# 高级智能
+
+该系统在处理复杂任务时的表现使其脱颖而出：
+
+### 智能分块
+为了防止内存溢出并处理超长内容：
+- **音频**：自动分割超过 60 分钟的文件进行转写。
+- **文本**：超过 24 万字符的转录文本将被分割成每份 10 万字符的块。
+
+### 搜索集成
+在生成摘要后，系统会提取关键词，并通过 DuckDuckGo（或百度作为备选）搜索补充材料。这确保了您对该主题有更全面的理解。
+
+# 快速上手
+
+运行该系统的最简单方法是通过 Web 界面：
+
+1. **克隆仓库**：
+   ```bash
+   git clone https://github.com/JCwinning/llm_summary.git
+   cd llm_summary
+   ```
+
+2. **配置环境**：创建一个 `.env` 文件并填入您的 API 密钥（OpenAI、DashScope 等）。
+
+3. **安装依赖**：
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **运行应用**：
+   ```bash
+   streamlit run app.py
+   ```
+
+# 结论
+
+LLM Summary System 不仅仅是一个下载器；它还是您的私人 AI 研究助手。无论您是学生、研究人员，还是只是想保持获取咨询，该工具都能通过将数小时的内容浓缩为分钟级的阅读，显著提高您的生产力。
+
+在 [GitHub](https://github.com/JCwinning/llm_summary) 上查看完整源代码并参与贡献。

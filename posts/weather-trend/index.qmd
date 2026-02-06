@@ -1,0 +1,762 @@
+---
+title: "结合 AI 预测的 Streamlit 天气预报应用"
+author: "Tony D"
+date: "2025-11-06"
+categories: [Python, Streamlit, AI, tutorial]
+image: "images/0.png"
+
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    code-copy: true
+
+execute:
+  eval: false
+  warning: false
+---
+
+
+# 项目概览
+
+在这一详尽的教程中，我将指导您创建一个精致的天气预报应用程序，该应用将现代 Web 开发与人工智能相结合。本项目演示了如何构建一个具备交互式地图、双语支持、实时数据可视化和 AI 驱动的天气分析功能的生产级天气应用。
+
+
+在线演示: [https://weather-trend.streamlit.app/](https://weather-trend.streamlit.app/)
+
+Github: [https://github.com/JCwinning/weather_trend](https://github.com/JCwinning/weather_trend)
+
+
+![天气预报应用主界面](images/0.png){width="100%"}
+
+
+
+这款天气预报应用不仅仅提供基础的天气数据，还集成了多项高级功能：
+
+- **交互式位置选择**：点击地图上的任意位置或通过城市名称搜索
+- **双语界面**：完整的英文/中文语言支持及切换功能
+- **AI 驱动的分析**：使用 DeepSeek AI 提供天气分析和建议
+- **高级可视化**：温度趋势、空气质量监测和降雨概率
+- **实时数据**：7 天历史数据和 5 天预报数据
+- **响应式设计**：在桌面、平板和移动设备上运行无阻
+
+## 技术架构
+
+```{mermaid}
+%%| fig-cap: "天气应用架构"
+%%| eval: true
+flowchart TD
+    A[用户界面<br/>Streamlit Web 应用] --> B[位置服务]
+    A --> C[天气数据 API]
+    A --> D[AI 集成层]
+    A --> E[可视化引擎]
+
+    B --> F[交互式地图<br/>Folium + OpenStreetMap]
+    B --> G[城市搜索<br/>Nominatim 地理编码]
+
+    C --> H[Open-Meteo API<br/>天气 + 空气质量]
+    C --> I[数据处理<br/>Pandas DataFrame]
+
+    D --> J[ModelScope API<br/>DeepSeek-V3.2 AI]
+    D --> K[智能分析<br/>天气建议]
+
+    E --> L[Altair 图表<br/>温度趋势]
+    E --> M[数据表格<br/>天气详情]
+
+    F --> A
+    G --> A
+    I --> E
+    K --> A
+```
+
+### 技术栈
+
+- **前端框架**：Streamlit，用于快速开发 Web 应用程序
+- **地图**：Folium 配合 OpenStreetMap 图层，实现交互式位置选择
+- **数据可视化**：Altair，用于专业的图表和图形
+- **API 集成**：Open-Meteo，获取天气和空气质量数据
+- **AI 服务**：通过 ModelScope API 使用 DeepSeek-V3.2 进行智能分析
+- **地理编码**：Nominatim，用于地址与坐标的转换
+- **国际化**：自定义语言系统，支持中英文切换
+
+## 快速上手
+
+### 环境要求与安装
+
+在深入代码之前，让我们先搭建好开发环境：
+
+```bash
+# 1. 克隆仓库
+git clone <your-repo-url>
+cd weather_trend
+
+# 2. 安装所需软件包
+pip install streamlit pandas requests altair folium streamlit-folium geopy python-dotenv openai
+
+# 3. 为 AI 功能设置环境变量
+echo "modelscope=您的 API 密钥" > .env
+```
+
+### 核心依赖项说明
+
+- **streamlit**：具备响应式 UI 组件的 Web 应用框架
+- **pandas**：用于天气数据集的数据操作和分析
+- **requests**：用于 API 通信的 HTTP 客户端
+- **altair**：声明式统计可视化库
+- **folium + streamlit-folium**：交互式地图集成
+- **geopy**：用于位置查找的地理编码服务
+- **python-dotenv**：环境变量管理
+- **openai**：AI 模型集成（与 ModelScope 兼容）
+
+## 核心功能实现
+
+### 1. 带位置选择的交互式地图
+
+地图功能允许用户点击任意位置并获取该地点的实时天气数据：
+
+```{python}
+import folium
+from streamlit_folium import st_folium
+
+# 创建以默认位置为中心的交互式地图
+def create_interactive_map(lat=40.7128, lon=-74.0060, zoom=10):
+    """创建交互式 Folium 地图"""
+    m = folium.Map(
+        location=[lat, lon],
+        zoom_start=zoom,
+        tiles="OpenStreetMap"
+    )
+
+    # 添加点击事件处理器以捕获坐标
+    m.add_child(folium.LatLngPopup())
+
+    return m
+
+# 在 Streamlit 中显示地图
+if 'map_data' not in st.session_state:
+    st.session_state.map_data = None
+
+map_object = create_interactive_map()
+st_data = st_folium(map_object, width=700, height=500)
+
+# 捕获点击处的坐标
+if st_data['last_clicked']:
+    lat = st_data['last_clicked']['lat']
+    lon = st_data['last_clicked']['lng']
+    st.session_state.clicked_location = (lat, lon)
+    get_weather_for_coordinates(lat, lon)
+```
+
+**关键特性：**
+- **点击选择**：用户可以点击地图上的任何地方
+- **缩放控制**：标准的地图导航功能
+- **响应式设计**：适应不同的屏幕尺寸
+- **坐标捕获**：自动提取所选位置的信息
+
+### 2. 双语城市搜索系统
+
+此应用支持中英文城市名称，并具备智能的回退机制：
+
+```{python}
+import re
+from geopy.geocoders import Nominatim
+
+# 扩展的中文字符检测
+def contains_chinese(text):
+    """检查文本是否包含中文字符，包括 CJK 统一汉字"""
+    chinese_pattern = re.compile(
+        r"[\u4e00-\u9fff\u3400-\u4dbf\U00020000-\U0002a6df\U0002a700-\U0002b73f]"
+    )
+    return bool(chinese_pattern.search(text))
+
+# 中文城市映射，以获得更好的解析效果
+CHINESE_CITY_MAPPING = {
+    "纽约": "New York",
+    "东京": "Tokyo",
+    "伦敦": "London",
+    "巴黎": "Paris",
+    "洛杉矶": "Los Angeles",
+    # ... 更多映射
+}
+
+def get_coordinates_for_city(city_name):
+    """获取城市坐标，支持多语言"""
+    # 检查中文城市名称映射
+    if contains_chinese(city_name) and city_name in CHINESE_CITY_MAPPING:
+        city_name = CHINESE_CITY_MAPPING[city_name]
+
+    # 对城市进行地理编码
+    geolocator = Nominatim(user_agent="weather_app")
+    try:
+        location = geolocator.geocode(city_name)
+        return (location.latitude, location.longitude) if location else None
+    except:
+        return None
+```
+
+**双语特性：**
+- **中文字符检测**：针对 CJK 字符的高级正则模式
+- **城市名称映射**：主要城市的翻译数据库
+- **错误处理**：当地理编码失败时保持系统稳定
+- **Unicode 支持**：完整支持国际化字符
+
+### 3. 天气数据集成
+
+该应用程序从 Open-Meteo API 获取全面的天气数据：
+
+```{python}
+import requests
+import pandas as pd
+
+def get_weather_data(latitude, longitude):
+    """获取 12 天的天气数据（7 天历史 + 5 天预报）"""
+
+    # API 端点配置
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        'latitude': latitude,
+        'longitude': longitude,
+        'daily': [
+            'temperature_2m_max', 'temperature_2m_min', 'temperature_2m_mean',
+            'weathercode', 'windspeed_10m_max', 'precipitation_probability_max',
+            'pm10', 'pm2_5'
+        ],
+        'timezone': 'auto',
+        'past_days': 7,  # 获取历史数据
+        'forecast_days': 5  # 获取未来预报
+    }
+
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+
+        # 处理响应数据
+        data = response.json()
+        df = process_weather_data(data)
+
+        return df
+
+    except requests.RequestException as e:
+        st.error(f"API 请求失败: {e}")
+        return None
+
+def process_weather_data(data):
+    """将 API 响应转换为结构化 DataFrame"""
+    daily_data = data['daily']
+
+    # 创建日期范围（历史 + 未来）
+    dates = pd.date_range(
+        start=pd.to_datetime(daily_data['time'][0]),
+        periods=len(daily_data['time']),
+        freq='D'
+    )
+
+    # 构建 DataFrame
+    df = pd.DataFrame({
+        'date': dates,
+        'temperature_max': daily_data['temperature_2m_max'],
+        'temperature_min': daily_data['temperature_2m_min'],
+        'temperature_mean': daily_data['temperature_2m_mean'],
+        'weather_code': daily_data['weathercode'],
+        'wind_speed_max': daily_data['windspeed_10m_max'],
+        'rain_probability': daily_data['precipitation_probability_max'],
+        'pm2_5': daily_data.get('pm2_5', [0] * len(dates))
+    })
+
+    # 添加衍生列
+    df['is_today'] = df['date'].dt.date == pd.Timestamp.now().date()
+    df['is_future'] = df['date'] > pd.Timestamp.now()
+
+    return df
+```
+
+**数据处理特性：**
+- **历史 + 预报**：7 天过去 + 5 天未来
+- **空气质量集成**：PM2.5 和 PM10 数据
+- **指标衍生**：今日检测和未来趋势分析
+- **错误管理**：健壮的 API 错误处理机制
+
+### 4. 高级数据可视化
+
+温度趋势图，清晰地区分了历史数据和预报数据：
+
+```{python}
+import altair as alt
+
+def create_temperature_chart(weather_df):
+    """创建交互式温度趋势图"""
+
+    # 包含温度线的基准图表
+    base_chart = alt.Chart(weather_df).mark_line(
+        point=True,
+        strokeWidth=3,
+        opacity=0.8
+    ).encode(
+        x=alt.X('date:T', title='日期'),
+        y=alt.Y('temperature_mean:Q', title='温度 (°C)', scale=alt.Scale(domain=[weather_df['temperature_min'].min()-5, weather_df['temperature_max'].max()+5]))
+    ).properties(
+        width=800,
+        height=400,
+        title='温度趋势图'
+    )
+
+    # 历史数据（实线）
+    historical_data = weather_df[weather_df['is_future'] == False]
+    historical_line = base_chart.transform_filter(
+        'datum.is_future == false'
+    ).encode(
+        color=alt.value('blue'),
+        strokeDash=alt.value([0])  # 实线
+    )
+
+    # 未来预报（虚线）
+    future_data = weather_df[weather_df['is_future'] == True]
+    future_line = base_chart.transform_filter(
+        'datum.is_future == true'
+    ).encode(
+        color=alt.value('red'),
+        strokeDash=alt.value([5, 5])  # 虚线
+    )
+
+    # 今日指示线
+    today_line = alt.Chart(pd.DataFrame({'x': [pd.Timestamp.now()]})).mark_rule(
+        strokeDash=[2, 2],
+        stroke='green',
+        strokeWidth=2
+    ).encode(x='x:T')
+
+    return (historical_line + future_line + today_line).resolve_scale(color='independent')
+```
+
+**可视化特性：**
+- **线条样式区分**：实线（历史）对比虚线（预报）
+- **今日指示器**：对当前日期的视觉标记
+- **颜色编码**：蓝色代表过去，红色代表未来
+- **交互式提示**：悬停时显示数据点信息
+
+### 5. 空气质量监测
+
+符合 EPA 标准的 PM2.5 水平颜色编码：
+
+```{python}
+def get_air_quality_level(pm25_value):
+    """基于美国 EPA PM2.5 标准获取空气质量等级"""
+
+    if pm25_value <= 12:
+        return {
+            'level': '优',
+            'color': '#00e400',  # 深绿
+            'text_color': 'white',
+            'icon': '🟢'
+        }
+    elif pm25_value <= 35.4:
+        return {
+            'level': '良',
+            'color': '#ffff00',  # 浅黄
+            'text_color': 'black',
+            'icon': '🟢'
+        }
+    elif pm25_value <= 55.4:
+        return {
+            'level': '轻度污染',
+            'color': '#ff7e00',  # 橙黄
+            'text_color': 'black',
+            'icon': '🟡'
+        }
+    elif pm25_value <= 150.4:
+        return {
+            'level': '中度污染',
+            'color': '#ff0000',  # 红色
+            'text_color': 'white',
+            'icon': '🟠'
+        }
+    elif pm25_value <= 250.4:
+        return {
+            'level': '重度污染',
+            'color': '#8f3f97',  # 紫色
+            'text_color': 'white',
+            'icon': '🔴'
+        }
+    else:
+        return {
+            'level': '严重污染',
+            'color': '#7e0023',  # 深褐
+            'text_color': 'white',
+            'icon': '⚫'
+        }
+
+def display_air_quality_badge(pm25_value):
+    """显示带视觉指示的空气质量徽章"""
+    aq_info = get_air_quality_level(pm25_value)
+
+    st.markdown(f"""
+    <div style="background-color: {aq_info['color']}; color: {aq_info['text_color']};
+                padding: 10px; border-radius: 5px; text-align: center; margin: 5px 0;">
+        <strong>{aq_info['icon']} PM2.5: {pm25_value} μg/m³</strong><br>
+        <small>{aq_info['level']}</small>
+    </div>
+    """, unsafe_allow_html=True)
+```
+
+**空气质量功能特性：**
+- **EPA 标准**：基于美国环境保护署的标准
+- **视觉指示器**：带图标的颜色编码徽章
+- **可访问性**：高对比度色值确保可读性
+- **科普性**：通过等级说明帮助用户理解
+
+## AI 驱动的天气智能
+
+### 集成 DeepSeek AI
+
+本项目最具创新性的功能是使用 ModelScope 平台上的 DeepSeek-V3.2 模型提供 AI 天气分析：
+
+![AI 天气分析建议](images/1.png){width="100%"}
+
+```{python}
+from openai import OpenAI
+import os
+
+# 初始化 ModelScope 的 AI 客户端
+def init_ai_client():
+    """初始化用于 ModelScope API 的 OpenAI 客户端"""
+    return OpenAI(
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        api_key=os.getenv("modelscope"),
+    )
+
+def generate_weather_insights(weather_df, location_name, language="en"):
+    """生成 AI 驱动的天气分析建议"""
+
+    # 准备用于 AI 分析的天气数据
+    today_index = weather_df[weather_df['is_today']].index[0] if any(weather_df['is_today']) else 0
+    historical_data = weather_df.iloc[:today_index+1]  # 截至今日
+    future_data = weather_df.iloc[today_index:]  # 今日起
+
+    # 为 AI 创建天气摘要
+    weather_summary = f"""
+    地点: {location_name}
+
+    历史天气 (过去 {len(historical_data)} 天):
+    - 温度范围: {historical_data['temperature_min'].min():.1f}°C 到 {historical_data['temperature_max'].max():.1f}°C
+    - 平均温度: {historical_data['temperature_mean'].mean():.1f}°C
+    - 空气质量范围: {historical_data['pm2_5'].min():.1f} 到 {historical_data['pm2_5'].max():.1f} PM2.5
+
+    天气预报 (未来 {len(future_data)} 天):
+    - 温度范围: {future_data['temperature_min'].min():.1f}°C 到 {future_data['temperature_max'].max():.1f}°C
+    - 平均降雨概率: {future_data['rain_probability'].mean():.0f}%
+    """
+
+    # 根据语言生成提示词
+    if language == "zh":
+        prompt = f"""
+        基于以下天气数据，请提供简洁实用的天气建议（100-200字）：
+
+        {weather_summary}
+
+        请包括：
+        1. 天气模式分析
+        2. 穿衣建议
+        3. 户外活动建议
+        4. 健康注意事项（如空气质量相关）
+
+        请用中文回复，语气友好实用。
+        """
+    else:
+        prompt = f"""
+        Based on the following weather data, please provide concise and practical weather advice (100-200 words):
+
+        {weather_summary}
+
+        Please include:
+        1. Weather pattern analysis
+        2. Clothing recommendations
+        3. Outdoor activity suggestions
+        4. Health considerations (related to air quality if applicable)
+
+        Please respond in {language} with a friendly and practical tone.
+        """
+
+    try:
+        client = init_ai_client()
+        response = client.chat.completions.create(
+            model="deepseek-ai/DeepSeek-V3",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300,
+            temperature=0.7
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+        return f"AI 服务暂时不可用。错误信息: {str(e)}"
+
+# 在 Streamlit 应用中
+if st.button(get_text("ai_button", language)):
+    with st.spinner("正在获取 AI 天气建议..."):
+        if 'weather_df' in st.session_state and 'location_name' in st.session_state:
+            ai_insights = generate_weather_insights(
+                st.session_state.weather_df,
+                st.session_state.location_name,
+                language
+            )
+            st.markdown("### 🤖 AI 天气分析")
+            st.write(ai_insights)
+        else:
+            st.warning("请先获取天气数据。")
+```
+
+**AI 特性：**
+- **上下文感知分析**：同时处理历史和预报数据
+- **多语言支持**：AI 根据用户选择的语言回复
+- **实用建议**：提供穿衣、活动和健康方面的见解
+- **容错处理**：在 AI 服务不可用时优雅地提示
+
+### AI 提示词工程
+
+AI 系统通过精心设计的提示词生成有价值的见解：
+
+**提示词结构：**
+1. **数据上下文**：全面的天气统计信息
+2. **任务定义**：明确的分析要求
+3. **输出格式**：结构化的回复类别
+4. **语言适配**：与 UI 语言保持一致
+
+**建议类别：**
+- **天气模式分析**：趋势和异常分析
+- **穿衣建议**：实用的穿着指导
+- **活动建议**：户外计划的推荐
+- **健康注意事项**：空气质量及天气影响
+
+## 国际化系统
+
+### 语言管理架构
+
+应用实现了一个全面的双语系统：
+
+```{python}
+# language.py - 翻译管理
+TRANSLATIONS = {
+    "en": {
+        "app_title": "Weather Forecast App",
+        "sidebar_header": "Weather Query",
+        "city_input_placeholder": "Enter a city name",
+        "get_weather_button": "Get Weather",
+        "weather_trends_title": "Weather Trends for",
+        "ai_button": "AI Weather Advice",
+        # ... 更多翻译
+    },
+    "zh": {
+        "app_title": "天气预报应用",
+        "sidebar_header": "天气查询",
+        "city_input_placeholder": "输入城市名称",
+        "get_weather_button": "获取天气",
+        "weather_trends_title": "天气趋势",
+        "ai_button": "AI天气建议",
+        # ... 更多翻译
+    }
+}
+
+def get_text(key, language="en"):
+    """获取指定键和语言的翻译文本"""
+    return TRANSLATIONS.get(language, {}).get(key, key)
+
+def get_available_languages():
+    """获取可用的语言选项"""
+    return {"en": "English", "zh": "中文"}
+
+# 在主程序 (app.py) 中
+def main():
+    # 语言状态管理
+    if 'language' not in st.session_state:
+        st.session_state.language = "en"
+
+    # 语言切换按钮
+    current_lang = st.session_state.language
+    available_langs = get_available_languages()
+
+    col1, col2, col3 = st.columns([1,1,6])
+    with col1:
+        if st.button("EN", disabled=current_lang=="en"):
+            st.session_state.language = "en"
+            st.rerun()
+
+    with col2:
+        if st.button("中文", disabled=current_lang=="zh"):
+            st.session_state.language = "zh"
+            st.rerun()
+
+    # 在所有 UI 元素中使用当前语言
+    language = st.session_state.language
+    st.title(get_text("app_title", language))
+    st.sidebar.header(get_text("sidebar_header", language))
+```
+
+**国际化特性：**
+- **完整的 UI 翻译**：本地化所有界面元素
+- **动态语言切换**：语言更改时即时更新 UI
+- **中文字符支持**：完整的 Unicode 和 CJK 支持
+- **语境一致**：AI 回复与 UI 语言相匹配
+
+## 高级 UI 组件
+
+### 带视觉指示的天气数据表
+
+天气表结合了数据与视觉元素，方便用户快速理解：
+
+```{python}
+def create_weather_table(weather_df, language="en"):
+    """创建增强的天气表，包含图标和颜色显示"""
+
+    # 天气代码到 Emoji 的映射
+    WEATHER_ICONS = {
+        0: "☀️",   # 晴
+        1: "⛅",   # 晴间多云
+        2: "☁️",   # 多云
+        3: "☁️",   # 阴
+        45: "🌫️",  # 雾
+        48: "🌦️",  # 阵雨
+        51: "🌧️",  # 雨
+        53: "❄️",  # 雪
+        95: "⛈️",  # 雷阵雨
+    }
+
+    def format_weather_row(row):
+        """格式化单行天气情况并添加样式"""
+        date_str = row['date'].strftime('%Y-%m-%d')
+        temp_range = f"{row['temperature_min']:.1f}° ~ {row['temperature_max']:.1f}°"
+        weather_icon = WEATHER_ICONS.get(row['weather_code'], "🌡️")
+
+        # 空气质量徽章
+        aq_info = get_air_quality_level(row['pm2_5'])
+        aq_badge = f'<span style="background-color: {aq_info["color"]}; color: {aq_info["text_color"]}; padding: 2px 6px; border-radius: 3px; font-size: 0.8em;">{aq_info["icon"]} {row["pm2_5"]:.0f}</span>'
+
+        # 降雨概率指示
+        rain_color = 'red' if row['rain_probability'] >= 80 else 'orange' if row['rain_probability'] >= 50 else 'gray'
+        rain_indicator = f'<span style="color: {rain_color};">🔴 {row["rain_probability"]:.0f}%</span>' if row['rain_probability'] >= 50 else f'<span style="color: {rain_color};">🟢 {row["rain_probability"]:.0f}%</span>'
+
+        # “今日”行高亮显示
+        row_style = 'font-size: 1.2em; font-weight: bold;' if row['is_today'] else ''
+
+        return {
+            '日期': f'<span style="{row_style}">{date_str}</span>',
+            '天气': f'<span style="{row_style}">{weather_icon}</span>',
+            '温度': f'<span style="{row_style}">{temp_range}</span>',
+            '风速': f'<span style="{row_style}">💨 {row["wind_speed_max"]:.1f} km/h</span>',
+            '降雨': rain_indicator,
+            '空气质量': aq_badge
+        }
+
+    # 对所有行应用格式化
+    formatted_rows = [format_weather_row(row) for _, row in weather_df.iterrows()]
+
+    return pd.DataFrame(formatted_rows)
+
+# 在 Streamlit 中显示
+st.markdown("### 📊 天气详情")
+st.dataframe(
+    create_weather_table(weather_df, language),
+    width=1200,
+    hide_index=True,
+    unsafe_allow_html=True
+)
+```
+
+**表格特性：**
+- **天气图标**：Emoji 表达方式，直观易懂
+- **今日高亮**：对当天日期使用更大、加粗的文字
+- **空气质量徽章**：颜色编码的 PM2.5 指标
+- **降雨概率**：基于 Material Design 色系的视觉指示
+- **响应式布局**：适应各种屏幕宽度
+
+## 部署与生产
+
+### 环境配置
+
+在生产环境部署时，请配置环境变量：
+
+```bash
+# .env 文件
+modelscope=您的 API 密钥
+
+# 其他生产环境设置
+# 考虑频率限制、缓存机制和监控
+```
+
+### 部署到 Streamlit Cloud
+
+```bash
+# 1. 安装 Streamlit CLI
+pip install streamlit
+
+# 2. 登录 Streamlit
+streamlit login
+
+# 3. 部署到 Streamlit Cloud
+streamlit run app.py  # 首先在本地测试
+# 然后通过 cloud.streamlit.io 或 CLI 进行部署
+```
+
+### Docker 部署 (可选)
+
+```dockerfile
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "app.py", "--server.address", "0.0.0.0"]
+```
+
+## 性能优化
+
+### 缓存策略
+
+```python
+@st.cache_data(ttl=3600)  # 缓存 1 小时
+def get_weather_data_cached(lat, lon):
+    """缓存天气数据获取操作"""
+    return get_weather_data(lat, lon)
+
+@st.cache_resource
+def get_ai_client():
+    """缓存 AI 客户端初始化"""
+    return init_ai_client()
+
+# 缓存地图生成
+@st.cache_data(ttl=3600)
+def create_map_cached(lat, lon):
+    """缓存地图创建操作"""
+    return create_interactive_map(lat, lon)
+```
+
+### 错误处理与容错
+
+```{python}
+def robust_api_call(func, *args, max_retries=3, **kwargs):
+    """带重试逻辑的高可用 API 调用"""
+    for attempt in range(max_retries):
+        try:
+            return func(*args, **kwargs)
+        except requests.exceptions.Timeout:
+            if attempt == max_retries - 1:
+                st.error("天气服务暂时不可用")
+                return None
+            time.sleep(2 ** attempt)  # 指数退避重试
+        except requests.exceptions.RequestException as e:
+            st.error(f"API 错误: {e}")
+            return None
+```
+
+
+- **数据可视化**：专业图表与交互式地图。
+- **AI 集成**：将语言模型实际应用于数据分析。
+- **国际化**：完整的双语支持。
+- **生产就绪**：包含错误处理、缓存和性能优化。
+
+无论您是在构建天气应用、数据看板还是 AI 驱动的工具，该项目都为创建复杂且用户友好的应用程序提供了坚实的基础。

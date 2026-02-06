@@ -1,0 +1,111 @@
+---
+title: "AI 聊天：多语言多模型应用 (AI Chat)"
+author: "Tony D"
+date: "2026-01-07"
+categories: [AI, Streamlit, Python, LLM]
+image: "images/featured.png"
+
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    code-copy: true
+
+execute:
+  warning: false
+---
+
+# 简介
+
+在人工智能飞速发展的今天，拥有一个能够与多个模型交互的统一界面是极具价值的。[AI Chat](https://github.com/JCwinning/AI_Chat) 是一个使用 Streamlit 构建的多语言、多模型 AI 聊天应用。它支持流式响应、图像输入、并发模型查询、网络搜索以及全面的文件处理功能。
+
+无论您是要对比不同大语言模型 (LLM) 的回答，还是生成精美的视觉效果，AI Chat 都能提供无缝且强大的体验。
+
+::: {.panel-tabset}
+
+## 文本回答
+![](images/1.png)
+
+## 图像创作
+![](images/2.png)
+
+## 上传文档摘要
+![](images/4.png) 
+ 
+AI 摘要论文：DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning (https://arxiv.org/pdf/2501.12948)
+ 
+## 预定义提示词
+![](images/3.png) 
+ 
+:::
+
+# ✨ 核心特性
+
+- **🌐 多语言支持**：可在中英文界面之间即时切换。
+- **🤖 多模型聊天**：同时向多个 AI 模型发起查询，并提供并排对比视图。
+- **🎨 图像生成与编辑**：使用 FLUX、通义万相 (Qwen Image) 和 Gemini 等模型创建和编辑图像。
+- **📚 提示词库 (Prompt Bay)**：内置 100+ 可搜索的系统提示词，用于专业化交互。
+- **🔍 Web 搜索**：集成 Tavily AI 搜索，实现实时信息检索。
+- **🖼️ 全面的文件支持**：支持上传并处理 PDF、Word 文档、Excel、CSV 和图像。
+- **⚡ 流式响应**：实时获取多个模型的并发反馈。
+
+# 🚀 快速开始
+
+若要在本地运行 AI Chat，请按照以下步骤操作：
+
+### 前提条件
+- Python 3.7 或更高版本
+- pip 包管理器
+
+### 安装步骤
+
+1. **克隆仓库**:
+   ```bash
+   git clone https://github.com/JCwinning/AI_Chat.git
+   cd AI_Chat
+   ```
+
+2. **安装依赖**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **配置 API 密钥**:
+   在项目根目录创建 `.env` 文件并添加您的密钥：
+   ```env
+   modelscope=您的-modelscope-api-key
+   openrouter=您的-openrouter-api-key
+   dashscope=您的-dashscope-api-key
+   bigmodel=您的-bigmodel-api-key
+   tavily_api_key=您的-tavily-api-key
+   ```
+
+4. **运行应用**:
+   ```bash
+   streamlit run app.py
+   ```
+
+# 🏗️ 架构与组件
+
+该项目旨在实现模块化和高性能：
+
+- **`app.py`**：主要入口点，使用 Streamlit 处理 UI 和会话管理。
+- **`config.py`**：集中式的模型定义和供应商设置。
+- **`search_providers.py`**：处理带有缓存功能的 Web 搜索集成。
+- **多线程**：使用 Python 的 `threading` 和 `Queue` 处理并行的模型请求和流式传输。
+- **文件处理**：利用 `markitdown` 进行文档转换，使用 `Pillow` 进行图像处理。
+
+# 📖 使用技巧
+
+### 并排对比
+最强大的功能之一是在“🤖 Models”选项卡中选择多个模型。当您发送消息时，应用会并行查询所有选定的模型并并排显示它们的回答，从而轻松对比其性能和准确性。
+
+### 使用提示词库
+不知道如何开始？使用“📚 Prompt Bay”寻找完美的系统提示词。您可以按类别或关键字搜索，并一键应用到当前会话中。
+
+### 高级文件分析
+上传 PDF 或 Excel 文件，应用会自动将其转换为 Markdown 或表格，并包含在对话上下文中。这允许您直接针对文档内容向 AI 提问。
+
+---
+
+*欢迎在 [GitHub](https://github.com/JCwinning/AI_Chat) 查看完整源代码，并开始构建您自己的 AI 驱动工作流！*

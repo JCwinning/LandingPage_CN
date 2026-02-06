@@ -1,0 +1,269 @@
+/* css styles */
+
+/* Enhanced text sizing for better readability */
+body {
+  font-size: 1.1rem;
+  /* Increase base font size */
+  line-height: 1.6;
+  /* Improve readability */
+}
+
+/* Larger text for main content */
+.quarto-content {
+  font-size: 1.15rem;
+  line-height: 1.7;
+}
+
+/* Increase heading sizes */
+h1 {
+  font-size: 2.5rem;
+  line-height: 1.3;
+}
+
+h2 {
+  font-size: 2rem;
+  line-height: 1.3;
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  line-height: 1.4;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+h4 {
+  font-size: 1.25rem;
+  line-height: 1.4;
+  margin-top: 1.5rem;
+  margin-bottom: 0.8rem;
+}
+
+/* Paragraph text sizing */
+p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 1.2rem;
+}
+
+/* List item sizing */
+ul li,
+ol li {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+/* Code block styling */
+pre,
+code {
+  font-size: 1rem;
+}
+
+pre code {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Blockquote styling */
+blockquote {
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+/* Table styling */
+table {
+  font-size: 1rem;
+}
+
+/* Special styling for OpenRouter post */
+.post-openrouter .quarto-content {
+  font-size: 1.2rem;
+}
+
+.post-openrouter p {
+  font-size: 1.15rem;
+  line-height: 1.8;
+}
+
+.post-openrouter ul li,
+.post-openrouter ol li {
+  font-size: 1.1rem;
+}
+
+/* Special styling for Weather Trend post */
+.post-weather-trend .quarto-content {
+  font-size: 1.2rem;
+}
+
+.post-weather-trend p {
+  font-size: 1.15rem;
+  line-height: 1.8;
+}
+
+.post-weather-trend ul li,
+.post-weather-trend ol li {
+  font-size: 1.1rem;
+}
+
+/* Responsive text sizing for mobile devices */
+@media (max-width: 768px) {
+  body {
+    font-size: 1rem;
+  }
+
+  .quarto-content {
+    font-size: 1.05rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.6rem;
+  }
+
+  h3 {
+    font-size: 1.3rem;
+  }
+
+  h4 {
+    font-size: 1.15rem;
+  }
+
+  p {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  ul li,
+  ol li {
+    font-size: 0.95rem;
+  }
+
+  .post-openrouter .quarto-content {
+    font-size: 1.1rem;
+  }
+
+  .post-openrouter p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .post-openrouter ul li,
+  .post-openrouter ol li {
+    font-size: 1rem;
+  }
+
+  .post-weather-trend .quarto-content {
+    font-size: 1.1rem;
+  }
+
+  .post-weather-trend p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .post-weather-trend ul li,
+  .post-weather-trend ol li {
+    font-size: 1rem;
+  }
+
+  pre code {
+    font-size: 0.85rem;
+  }
+}
+
+/* Larger screens - even bigger text for better reading */
+@media (min-width: 1200px) {
+  .quarto-content {
+    font-size: 1.2rem;
+  }
+
+  .post-openrouter .quarto-content {
+    font-size: 1.25rem;
+  }
+
+  .post-weather-trend .quarto-content {
+    font-size: 1.25rem;
+  }
+
+  h1 {
+    font-size: 2.8rem;
+  }
+
+  h2 {
+    font-size: 2.2rem;
+  }
+}
+
+/* Grid layout styling for blog posts */
+.listing-grid {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.listing-grid .listing-item {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  background: white;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.listing-grid .listing-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.listing-grid .listing-item h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.listing-grid .listing-item .listing-meta {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.listing-grid .listing-item p {
+  margin-bottom: 0;
+  line-height: 1.5;
+}
+
+/* Image styling for blog grid items */
+.listing-grid .listing-item img,
+.thumbnail-image.card-img {
+  width: 100%;
+  height: 200px !important;
+  /* Set a consistent height */
+  object-fit: cover;
+  /* Ensure image fills the space without distortion */
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.listing-grid .listing-item .thumbnail-image.card-img {
+  height: 200px !important;
+}
+
+/* Ensure grid items can accommodate varying aspect ratios */
+.listing-grid .listing-item {
+  min-height: auto !important;
+}
+
+.listing-grid .listing-item .card {
+  height: auto !important;
+}
+
+/* Adjust home page head banner height */
+.quarto-title-banner {
+  padding-top: 0.1rem !important;
+  padding-bottom: 0.1rem !important;
+}

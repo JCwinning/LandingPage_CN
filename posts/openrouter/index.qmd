@@ -1,0 +1,803 @@
+---
+title: "OpenRouter：多 AI 模型的统一 API"
+author: "Tony D"
+date: "2025-11-01"
+categories: [AI, API, tutorial]
+image: "images.png"
+
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    code-copy: true
+
+execute:
+  eval: false
+  warning: false
+---
+
+
+```{python}
+#| include: false
+# Install required packages
+import subprocess
+import sys
+
+required_packages = ['openai', 'python-dotenv', 'pandas', 'IPython','panel']
+for package in required_packages:
+    try:
+        __import__(package.replace('-', '_'))
+        print(f"{package} already installed")
+    except ImportError:
+        print(f"Installing {package}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+```
+
+
+
+```{python}
+#| include: false
+import sys, platform
+print(sys.executable)
+```
+
+# OpenRouter 简介
+
+OpenRouter 是一个强大的平台，它提供了一个统一的 API 接口，用于访问来自不同提供商的多个 AI 模型。开发人员无需分别为每个 AI 服务进行集成，而是可以使用 OpenRouter 的单一端点访问来自 OpenAI、Anthropic、Google 等公司的模型。
+
+## OpenRouter 入门
+
+使用 OpenRouter 非常简单，只需几个步骤即可完成。该平台旨在最大限度地减少设置时间，同时保持安全最佳实践。
+
+## 1. 创建您的 OpenRouter 账户
+
+首先，访问 [openrouter.ai](https://openrouter.ai) 并创建一个账户。注册过程非常简单：
+
+1. **注册**：使用您的电子邮箱或社交登录（Google、GitHub）
+2. **验证邮箱**：通过验证链接确认您的电子邮箱地址
+3. **访问仪表板**：导航到仪表板，您可以在那里找到您的 API 密钥
+
+**💡 专家提示**：您的仪表板提供了宝贵的洞察，包括：
+- 使用统计和成本追踪
+- 模型性能指标
+- API 密钥管理
+- 账单信息
+
+## 2. 安全的 API 密钥管理
+
+在使用 AI API 时，安全至关重要。切勿直接在代码中硬编码 API 密钥。相反，使用环境变来确保您的凭据安全：
+
+### 为什么环境变量很重要
+- **安全性**：防止在版本控制中意外泄露
+- **灵活性**：允许为开发、测试和生产环境使用不同的密钥
+- **协作**：团队成员可以在不共享的情况下使用自己的密钥
+- **部署**：易于在不同的托管环境中进行管理
+
+### 设置环境变量
+
+在项目根目录下创建一个 `.env` 文件：
+
+OPENROUTER_API_KEY=your_actual_api_key_here
+
+
+
+安装 `python-dotenv` 库以加载环境变量：
+
+pip install python-dotenv
+
+
+## 3. 您的第一次 API 调用
+
+现在您已经设置好了 API 密钥，让我们进行第一次 API 调用。OpenRouter 巧妙地使用了与 OpenAI 相同的 API 格式，这意味着您可以使用熟悉的 `openai` Python 库 —— 只是使用不同的基端点 URL。
+
+### 了解架构
+
+**🔧 它是如何工作的**：OpenRouter 充当智能代理，负责：
+1. 接收您的标准化 API 请求
+2. 将其路由到适当的 AI 模型提供商
+3. 处理特定于提供商的身份验证和格式化
+4. 以一致的格式返回响应
+5. 追踪所有模型的使用情况和成本
+
+### 必需的依赖项
+
+在开始之前，请确保您已安装必要的 Python 包：
+
+```bash
+pip install openai python-dotenv
+```
+
+- **openai**: 官方的 OpenAI Python 客户端（与 OpenRouter 兼容）
+- **python-dotenv**: 用于从 `.env` 文件加载环境变量
+
+### 基础文本生成示例
+
+
+::: {.panel-tabset}
+
+## Python (使用 OpenAI 包)
+
+```{python}
+#| eval: false
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
+# 从 .env 文件加载环境变量
+load_dotenv()
+
+# 使用 OpenRouter 初始化 OpenAI 客户端
+client = OpenAI(
+  base_url="https://openrouter.ai/api/v1",  # OpenRouter 的 API 端点
+  api_key=os.getenv("OPENROUTER_API_KEY"),  # 您安全的 API 密钥
+)
+
+# 使用 OpenRouter 创建对话补全
+completion = client.chat.completions.create(
+  extra_headers={
+    "HTTP-Referer": "https://your-site.com",  # 可选：帮助 OpenRouter 改进服务
+    "X-Title": "Your Site Name",             # 可选：用于 OpenRouter 排名的网站名称
+  },
+  model="openai/gpt-oss-20b:free",          # 用于测试/开发的免费模型
+  messages=[
+    {
+      "role": "user",
+      "content": "你好！你能用简单的术语解释一下什么是 OpenRouter 吗？"
+    }
+  ],
+  temperature=0.7  # 控制创造力 (0.0 = 确定性, 1.0 = 非常有创意)
+)
+
+# 提取并打印响应
+print(completion.choices[0].message.content)
+```
+
+
+
+## Python (使用 Chatlas 包)
+
+```{python}
+#| eval: false
+from chatlas import ChatOpenRouter
+import os
+from dotenv import load_dotenv
+
+# 从 .env 文件加载环境变量
+load_dotenv()
+
+# 使用 OpenRouter 初始化 OpenAI 客户端
+client = ChatOpenRouter(api_key=os.getenv("OPENROUTER_API_KEY")
+,base_url='https://openrouter.ai/api/v1'
+ ,system_prompt=None
+ ,model="openai/gpt-oss-20b:free")
+```
+
+```{python}
+response=client.chat("法国的首都是哪里？")
+#str(response)
+```
+
+
+## R (使用 Ellmer 包)
+
+```{r}
+library(ellmer)
+library(dotenv)
+load_dot_env(file = ".env")
+
+chat <- chat_openrouter(
+  system_prompt = NULL,
+  api_key = Sys.getenv("OPENROUTER_API_KEY"),
+ 
+  model = "openai/gpt-oss-20b:free",
+  echo = "none"
+)
+```
+
+
+
+```{r}
+chat$chat("给我讲三个关于统计学家的笑话")
+```
+
+
+:::
+
+
+**核心组件说明：**
+
+- **`base_url`**：指向 OpenRouter 的 API 而非 OpenAI 的
+- **`model`**：使用 OpenRouter 的模型命名格式 (`提供商/模型名称`)
+- **`extra_headers`**：可选，但建议用于 OpenRouter 的分析
+- **`temperature`**：控制响应的创造力（范围 0.0-2.0）
+- **`messages`**：标准的聊天格式，采用基于角色的对话结构
+
+**💡 模型选择建议：**
+- **免费模型**：非常适合开发阶段（以 `*free` 结尾）
+- **经济型模型**：适合生产环境的成本效益模型（以 `*:budget` 结尾）
+- **高级模型**：最佳性能（`*`、`*:pro`、`*:latest`）
+- **专业模型**：针对特定任务优化的模型（编程、数学、创意写作）
+
+## 4. 掌握系统提示词 (System Prompts)
+
+系统提示词是塑造 AI 行为、个性和回复风格的强大工具。它们设置了整个对话的上下文和规则，在对话流中出现在用户消息之前。
+
+### 什么是系统提示词？
+
+系统提示词充当**元指令**，指导 AI 在整个对话中应如何反应。它们最先被处理，并影响所有后续的交互。
+
+### 为什么系统提示词很重要
+
+- **一致的行为**：确保 AI 在整个过程中保持所需的个性
+- **输出格式**：规定响应结构（JSON、Markdown、代码块）
+- **安全约束**：设置回复的边界和限制
+- **上下文设置**：提供背景信息以获得更好的回复
+- **任务专门化**：针对特定用例优化 AI
+
+### 有效的系统提示词示例
+
+```{python}
+#| eval: false
+# 带有系统提示词的示例
+completion = client.chat.completions.create(
+  model="openai/gpt-oss-20b:free",
+  messages=[
+    {
+      "role": "system",
+      "content": "你是一个乐于助人的 AI 助手，可以用简单的术语解释技术概念。始终保持友好，并尽可能使用类比，保持简单。"
+    },
+    {
+      "role": "user",
+      "content": "LLM 模型中的温度 (temperature) 是如何工作的？"
+    }
+  ],
+  temperature=0.7
+)
+
+print(completion.choices[0].message.content)
+```
+
+常见的系统提示词模式：
+
+```{python}
+#| eval: false
+# 不同的系统提示词示例
+system_prompts = {
+    "coding_assistant": "你是一个专家级程序员。提供整洁、注释良好的代码解决方案，并解释你的推理。",
+    "creative_writer": "你是一个创意故事讲述者。编写具有生动描述和引人入胜角色的动人叙述。",
+    "data_analyst": "你是一个数据分析师。根据数据提供见解，建议可视化方式，并清晰地解释统计概念。",
+    "tutor": "你是一个耐心的导师。将复杂的主题分解为简单的步骤并提供鼓励性的反馈。"
+}
+
+def chat_with_persona(persona, user_message):
+    completion = client.chat.completions.create(
+        model="openai/gpt-oss-20b:free",
+        messages=[
+            {"role": "system", "content": system_prompts[persona]},
+            {"role": "user", "content": user_message}
+        ],
+        temperature=0.7
+    )
+    return completion.choices[0].message.content
+
+# 示例用法
+#response = chat_with_persona("coding_assistant", "如何用 Python 反转字符串？")
+#print(response)
+```
+
+
+## 5. 流式响应：实时 AI 交互
+
+流式传输 (Streaming) 是提升用户体验的利器，特别是在聊天应用和交互式工具中。流式传输不是等待完整的响应，而是在生成内容时立即交付，从而创造自然且引人入胜的对话。
+
+### 为什么流式传输很重要
+
+**🚀 用户体验优势：**
+- **立即反馈**：用户能立即看到响应开始生成
+- **降低感知延迟**：内容在生成时即刻显示
+- **自然的对话流**：模仿人类说话的模式
+- **进度指示**：用户知道 AI 正在工作
+- **及早终止**：如果需要，用户可以停止过长的回复
+
+**⚡ 技术优势：**
+- **更低的内存占用**：无需缓冲完整响应
+- **更快的首字节时间**：内容立即开始流动
+- **更好的错误处理**：在过程中更早发现问题
+- **资源效率**：增量处理数据
+
+### 在 OpenRouter 中实现流式传输
+
+```{python}
+#| eval: false
+# 初始化 OpenAI 客户端（如果尚未完成）
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+client = OpenAI(
+  base_url="https://openrouter.ai/api/v1",
+  api_key=os.getenv("OPENROUTER_API_KEY"),
+)
+
+def stream_response(model, message):
+    stream = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": message}],
+        stream=True
+    )
+
+    for chunk in stream:
+        if chunk.choices[0].delta.content is not None:
+            print(chunk.choices[0].delta.content, end='', flush=True)
+
+# 流式传输示例
+print("正在流式传输响应：")
+stream_response("openai/gpt-oss-20b:free", "请给我讲一个关于 AI 的短篇故事")
+print()  # 流式传输结束后添加换行
+```
+
+
+
+
+### 6. 文字转图像 (Text to Image)
+
+
+```{python}
+from openai import OpenAI
+import base64
+import datetime
+```
+
+
+```{python}
+# | eval: false
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
+# 从 .env 文件加载环境变量
+load_dotenv()
+
+# 使用 OpenRouter 初始化 OpenAI 客户端
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+)
+```
+
+
+```{python}
+#| eval: false
+# 图像生成请求
+response = client.chat.completions.create(
+    extra_headers={
+        "HTTP-Referer": "www.tonydotdev.com",
+        "X-Title": "TT_AI_blog",
+    },
+    model="google/gemini-2.5-flash-image",
+    messages=[
+        {
+            "role": "user",
+            "content": "生成一张宁静且写实的日出雪山风景图。",
+        }
+    ],
+    modalities=["image", "text"],
+    #image_size="1024x1024",
+)
+```
+
+
+
+
+```{python}
+#| eval: false
+import base64
+import datetime
+# 提取消息
+message = response.choices[0].message
+
+# 处理图像输出（base64 字符串位于 "data:image/png;base64,..." 中）
+if message.images:
+    data_url = message.images[0]["image_url"]["url"]
+
+    # 如果存在前缀则将其剥离
+    if data_url.startswith("data:image"):
+        _, base64_data = data_url.split(",", 1)
+    else:
+        base64_data = data_url
+
+    # 解码并保存为 PNG
+    image_bytes = base64.b64decode(base64_data)
+    current_time = datetime.datetime.now().strftime("%H%M")
+    output_file = f"text_image_gemini_25_openrouter_{current_time}.png"
+    with open(output_file, "wb") as f:
+        f.write(image_bytes)
+
+    print(f"✅ 图像已保存为 {output_file}")
+else:
+    print("❌ 响应中未返回图像")
+```
+
+```{python}
+#| eval: true
+#| include: false
+# 确保 IPython 可用
+try:
+    from IPython.display import Image, display
+    print("IPython 加载成功")
+except ImportError as e:
+    print(f"IPython 导入错误: {e}")
+    import subprocess
+    import sys
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "IPython"])
+    from IPython.display import Image, display
+```
+
+```{python}
+#| eval: true
+from IPython.display import Image, display
+
+display(Image(filename="text_image_gemini_25_openrouter_1352.png"))
+```
+
+
+### 7. 图像转文字 (Image to Text)
+
+```{python}
+#| eval: false
+import base64
+
+# 将本地图像转换为 data URL
+with open("text_image_gemini_25_openrouter_1352.png", "rb") as image_file:
+    base64_image = base64.b64encode(image_file.read()).decode('utf-8')
+    data_url = f"data:image/png;base64,{base64_image}"
+
+completion = client.chat.completions.create(
+  extra_headers={
+    "HTTP-Referer": "<您的网站URL>", # 可选：OpenRouter 排名用的网站 URL
+    "X-Title": "<您的网站名称>", # 可选：OpenRouter 排名用的网站名称
+  },
+  extra_body={},
+  model="nvidia/nemotron-nano-12b-v2-vl:free",
+  messages=[
+              {
+                "role": "user",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "这张图片里有什么？"
+                  },
+                  {
+                    "type": "image_url",
+                    "image_url": {
+                      "url": data_url
+                    }
+                  }
+                ]
+              }
+            ]
+)
+print(completion.choices[0].message.content)
+```
+
+
+
+### 8. 文字与图像结合生成图像 (Text & Image to Image)
+
+```{python}
+# | eval: false
+import base64
+
+# 将之前生成的图像转换为 base64
+with open("text_image_gemini_25_openrouter_1352.png", "rb") as image_file:
+    base64_image = base64.b64encode(image_file.read()).decode("utf-8")
+
+response = client.chat.completions.create(
+    extra_headers={
+        "HTTP-Referer": "www.tonydotdev.com",
+        "X-Title": "TT_AI_blog",
+    },
+    model="google/gemini-2.5-flash-image",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "将这张图片转换为日落版本，使用更温暖的色彩和金色的光线。在前景中增加一个正在滑雪的人。",
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/png;base64,{base64_image}"},
+                },
+            ],
+        }
+    ],
+    modalities=["image", "text"],
+    # image_size="1024x1024",
+)
+```
+
+
+```{python}
+#| eval: false
+import base64
+import datetime
+# 提取消息
+message = response.choices[0].message
+
+# 处理图像输出（base64 字符串位于 "data:image/png;base64,..." 中）
+if message.images:
+    data_url = message.images[0]["image_url"]["url"]
+
+    # 如果存在前缀则将其剥离
+    if data_url.startswith("data:image"):
+        _, base64_data = data_url.split(",", 1)
+    else:
+        base64_data = data_url
+
+    # 解码并保存为 PNG
+    image_bytes = base64.b64decode(base64_data)
+    current_time = datetime.datetime.now().strftime("%H%M")
+    output_file = f"text_image_gemini_25_openrouter_{current_time}.png"
+    with open(output_file, "wb") as f:
+        f.write(image_bytes)
+
+    print(f"✅ 图像已保存为 {output_file}")
+else:
+    print("❌ 响应中未返回图像")
+```
+
+
+```{python}
+from IPython.display import Image, display
+
+display(Image(filename="text_image_gemini_25_openrouter_1405.png"))
+```
+
+### 8 Embedding
+
+```{python}
+from openai import OpenAI
+## 8. 文本嵌入 (Embedding)
+
+```{python}
+#| eval: false
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
+# 从 .env 文件加载环境变量
+load_dotenv()
+
+# 使用 OpenRouter 初始化 OpenAI 客户端
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+)
+
+
+embedding = client.embeddings.create(
+  extra_headers={
+    "HTTP-Referer": "<YOUR_SITE_URL>", # 可选：OpenRouter 排名用的网站 URL
+    "X-Title": "<YOUR_SITE_NAME>", # 可选：OpenRouter 排名用的网站名称
+  },
+  model="thenlper/gte-base",
+  input="I can",
+  encoding_format="float"
+)
+
+#print(embedding.data[0].embedding) 
+```
+
+
+```{python}
+len(embedding.data[0].embedding)
+```
+
+
+```{python}
+print(embedding.data[0].embedding[:5])  # 打印前 5 个维度
+```
+
+
+
+## 成本管理：优化您的 AI 支出
+
+OpenRouter 最强大的功能之一是其透明的定价模型和成本管理能力。对于生产级 AI 应用来说，理解和管理成本至关重要。
+
+## 为什么成本管理很重要
+
+**💰 财务规划：**
+- 可预测的每月支出
+- 为不同用例分配预算
+- AI 功能的 ROI 分析
+- 每个用户的成本追踪
+
+**🔍 技术优化：**
+- 根据成本/性能比选择模型
+- 提示词工程以减少 Token 使用
+- 重复请求的缓存策略
+- 提高效率的批量处理
+
+## 实时成本追踪
+
+OpenRouter 提供了通过编程方式访问所有模型当前定价的接口：
+
+```{python}
+#| eval: true
+#| include: false
+# 安装所需包
+import subprocess
+import sys
+
+required_packages = ['openai', 'python-dotenv', 'pandas', 'IPython','panel']
+for package in required_packages:
+    try:
+        __import__(package.replace('-', '_'))
+        print(f"{package} 已安装")
+    except ImportError:
+        print(f"正在安装 {package}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+```
+
+```{python}
+#| eval: true
+# 初始化 OpenAI 客户端（如果尚未完成）
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+import pandas as pd
+
+load_dotenv()
+client = OpenAI(
+  base_url="https://openrouter.ai/api/v1",
+  api_key=os.getenv("OPENROUTER_API_KEY"),
+)
+
+def get_model_pricing():
+    models_list = client.models.list()
+    pricing_data = []
+
+    for model in models_list.data:
+        name = model.id
+        pricing = model.pricing
+
+        # 获取模型元数据
+        context_length = getattr(model, 'context_length', None)
+        description = getattr(model, 'description', '')
+
+        # 获取创建日期并转换为可读格式
+        created_timestamp = getattr(model, 'created', None)
+        if created_timestamp:
+            import datetime
+            created_date = datetime.datetime.fromtimestamp(created_timestamp).strftime('%Y-%m-%d')
+        else:
+            created_date = None
+
+        # 从模型名称中提取公司（'/' 前的第一部分）
+        company = name.split('/')[0] if '/' in name else 'Unknown'
+
+        # 将每个 Token 的价格转换为每 100 万个 Token 的成本
+        prompt_cost = float(pricing.get('prompt', 0)) * 1000000 if pricing and pricing.get('prompt') else 0
+        completion_cost = float(pricing.get('completion', 0)) * 1000000 if pricing and pricing.get('completion') else 0
+        request_cost = float(pricing.get('request', 0)) * 1000000 if pricing and pricing.get('request') else 0
+        image_cost = float(pricing.get('image', 0)) * 1000000 if pricing and pricing.get('image') else 0
+
+        pricing_data.append({
+            '模型': name,
+            '公司': company,
+            '描述': description,
+            '上下文长度': context_length,
+            '创建日期': created_date,
+            '提示词成本_每1M': prompt_cost,
+            '补全成本_每1M': completion_cost,
+            '请求成本_每1M': request_cost,
+            '图像成本_每1M': image_cost
+        })
+
+    # 创建 Pandas DataFrame
+    df = pd.DataFrame(pricing_data)
+
+    # 按公司、模型名称排序，方便整理
+    df = df.sort_values(['公司', '模型']).reset_index(drop=True)
+
+    return df
+
+# 获取价格 DataFrame（全量模型以及仅付费模型）
+all_models_df = get_model_pricing()
+```
+
+
+
+
+#### 最昂贵的模型
+
+```{python}
+#| eval: true
+import panel as pn
+
+
+df = all_models_df[
+    [
+        "模型",
+        "上下文长度",
+        "创建日期",
+        "提示词成本_每1M",
+        "补全成本_每1M",
+    ]
+].sort_values("提示词成本_每1M", ascending=False)
+
+# 创建一个带分页的表格
+pn.extension("tabulator")
+table = pn.widgets.Tabulator(df, pagination="local", page_size=10, show_index=False)
+table
+```
+
+
+## 最佳实践：生产就绪的 AI 开发
+
+遵循这些最佳实践将帮助您使用 OpenRouter 构建稳健、安全且高效的 AI 应用程序。
+
+## 🔒 安全最佳实践
+
+### 1. API 密钥管理
+- **切勿硬编码 API 密钥**在源代码或配置文件中
+- **使用环境变量**或秘密管理系统（如 AWS Secrets Manager、Azure Key Vault）
+- **定期轮换 API 密钥**并实施密钥轮换策略
+- **使用不同的密钥**用于开发、测试和生产环境
+- **将 .env 添加到 .gitignore** —— 永远不要将凭据提交到版本控制中
+
+### 2. 输入验证与清理
+- **在发送到 AI 模型之前验证用户输入**
+- **清理提示词**以防止提示词注入攻击
+- **实施速率限制**以防止滥用
+- **记录并监控**异常活动模式
+
+## ⚡ 性能最佳实践
+
+### 3. 模型选择策略
+- **为您的用例选择合适的模型** —— 并非所有任务都需要最昂贵的模型
+- **针对您的特定用例进行模型基准测试**
+- **使用免费模型**进行开发和测试
+- **考虑专用模型**处理特定任务（编程、数学、创意写作）
+
+### 4. 优化技术
+- **实施缓存**以减少重复请求的成本
+- **使用流式传输**以获得更好的用户体验
+- **在适当情况下进行批量请求**以提高效率
+- **优化提示词** —— 精心设计的提示词可以减少 Token 使用并改善结果
+
+## 🛡️ 可靠性最佳实践
+
+### 5. 错误处理与容错
+- **实施全面的错误处理** —— 模型可能会不可用或受到速率限制
+- **使用备用模型** —— 确保即使一个模型宕机，您的应用程序仍能正常运行
+- **实施带有指数退避的重试逻辑**
+- **监控响应时间**并设置适当的超时
+
+### 6. 监控与分析
+- **监控使用情况** —— 追踪成本并设置限制
+- **追踪性能指标**（延迟、成功率、错误率）
+- **为异常活动模式设置告警**
+- **创建实时监控仪表板**
+
+## 📊 成本管理最佳实践
+
+### 7. 预算控制
+- **在 OpenRouter 仪表板中设置支出限制**和告警
+- **为非关键任务使用高性价比模型**
+- **实施 Token 计数**以在请求前估算成本
+- **定期查看使用报告**以识别优化机会
+
+## 结论：构建 AI 应用的未来
+
+OpenRouter 代表了开发人员与 AI 模型交互方式的范式转变。通过提供访问世界上最先进 AI 模型的统一、可靠且极具成本效益的网关，OpenRouter 让开发人员能够专注于创造价值，而不是处理复杂的基础设施。
+
+
+
+
+
+
+

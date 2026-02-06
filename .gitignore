@@ -1,0 +1,13 @@
+/.quarto/
+**/*.quarto_ipynb
+.env
+.env.local
+.env.development
+.env.production
+
+settings.json
+
+chat_history.json
+
+GEMINI.md
+.claude

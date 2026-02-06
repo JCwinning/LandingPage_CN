@@ -1,0 +1,63 @@
+project:
+  type: website
+  output-dir: docs
+  render:
+    - "*.qmd"
+    - "!*.md"
+
+website:
+  description: "由 Quarto 构建的 AI 博客"
+  site-url: https://jcwinning.github.io/LandingPage # you must change this appropriately for RSS feeds to work properly
+  title: "由 AI 驱动"
+  favicon: favicon.png
+  google-analytics: "G-9NBJ66WLRT"
+  navbar:
+    right:
+      - text: "主页"
+        href: index.qmd
+      - text: "手册"  # This becomes the clickable/hoverable label
+        menu:
+          - text: "SQL 手册"
+            href: https://jcwinning.github.io/Into_sql/
+          - text: "R 手册"
+            href: https://jcfly3000.github.io/Into-R/
+          - text: "Python 手册"
+            href: https://jcfly3000.github.io/Into-Python/
+          - text: "机器学习手册"
+            href: https://jcwinning.github.io/into_ml/
+          - text: "TensorFlow 手册"
+            href: https://tonyfly3000.github.io/tensorflowing/ 
+          - text: "AI 手册"
+            href: https://jcfly3000.github.io/into_AI/
+      - text: "博客"
+        href: posts.qmd
+      - cv.qmd
+      - icon: github
+        href: https://github.com/JCwinning
+      - icon: rss
+        href: index.xml
+  page-footer:
+    right: "本博客由 ❤️ 和 [Quarto](https://quarto.org/) 构建。"
+
+
+format:
+  html:
+    grid:
+      body-width: 1000px
+      sidebar-width: 300px
+      margin-width: 300px
+      gutter-width: 1.5rem
+
+    fontsize: 1.2em
+    page-layout: full
+    toc: true
+    toc-location: right
+    toc-depth: 3
+    theme:
+      light: cosmo
+      dark: darkly
+    css: styles.css
+
+execute:
+  freeze: auto  # Options: true, false, auto
+
