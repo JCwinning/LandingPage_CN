@@ -1,5 +1,5 @@
 ---
-title: "CV / 简历"
+title: "简历"
 page-layout: article
 toc: false
 ---

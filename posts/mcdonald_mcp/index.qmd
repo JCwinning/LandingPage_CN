@@ -1,0 +1,171 @@
+---
+title: "麦当劳 MCP"
+author: "Tony D"
+date: "2026-02-06"
+categories: [AI, MCP]
+image: "images/0.png"
+
+format:
+  html:
+    code-fold: false
+    code-tools: true
+    code-copy: true
+    
+execute:
+  warning: false
+
+---
+
+# 麦当劳 MCP 文档
+
+麦当劳 MCP (Model Context Protocol) 服务允许 AI 助手直接访问麦当劳中国的活动日历、优惠券和营养信息。
+
+[麦当劳 Github](https://github.com/M-China/mcd-mcp-server)
+
+## 1. 获取 Token
+
+1. 访问 [麦当劳 MCP 开放平台](https://open.mcd.cn/mcp)。
+2. 登录并申请您的个人 MCP Token。
+3. 获得 Token 后，请替换下面配置中的 `Your-Token`。
+
+
+## 2. 配置 MCP 服务
+
+您可以将麦当劳 MCP 集成到支持 MCP 协议的各种工具中。
+
+::: {.panel-tabset}
+
+### 与 ellmer Chat (R) 集成
+
+`mcptools` 包可以在 R 中实现 MCP 服务器与 ellmer chat 的无缝集成。以下是配合 ellmer 设置和使用麦当劳 MCP 的方法。
+
+#### 步骤 1: 安装所需包
+
+```{r}
+#| eval: false
+# 如果尚未安装，请安装相关包
+install.packages(c("ellmer", "mcptools", "dotenv"))
+```
+
+#### 步骤 2: 创建 MCP 配置文件
+
+在项目目录中创建一个名为 `mcp_config.json` 的文件，内容如下：
+
+```{json}
+#| eval: false
+#| code-fold: false
+{
+  "mcpServers": {
+    "mcd-mcp": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://mcp.mcd.cn/mcp-servers/mcd-mcp",
+        "--header",
+        "Authorization: Bearer Your-Token"
+      ]
+    }
+  }
+}
+```
+
+将 `Your-Token` 替换为您从 [麦当劳 MCP 开放平台](https://open.mcd.cn/mcp) 获取的实际 MCP token。
+
+
+#### 步骤 3: 加载库和配置
+
+```{r}
+
+library(ellmer)
+library(mcptools)
+library(dotenv)
+
+# 加载环境变量
+load_dot_env(file = ".env")
+```
+
+#### 步骤 4: 使用 MCP 工具初始化聊天
+
+```{r}
+
+# 创建一个 ellmer 聊天对象（以 OpenRouter 为例）
+chat <- chat_openrouter(
+  system_prompt = "你是一个能够与麦当劳服务交互的得力助手。请使用中文回答，并保持简洁。",
+  api_key = Sys.getenv("OPENROUTER_API_KEY"),
+  model = "x-ai/grok-4.1-fast",
+  echo = "output"
+)
+
+# 从配置文件加载 MCP 工具
+mcd_tools <- mcp_tools(config = "mcp_config.json")
+
+# 向聊天对象注册 MCP 工具
+chat$set_tools(mcd_tools)
+```
+
+#### 步骤 5: 配合 MCP 集成进行聊天
+
+现在您可以提问，AI 将使用麦当劳 MCP 工具：
+
+```{r}
+
+# 查询可用优惠券
+chat$chat("现在有哪些可用的优惠券？")
+```
+
+```{r}
+# 自动领取所有优惠券
+chat$chat("帮我领取所有可用的优惠券。")
+```
+
+```{r}
+# 查看您的优惠券
+chat$chat("显示我目前所有的优惠券。")
+```
+
+```{r}
+# 查询活动日历
+chat$chat("接下来的 15 天里有哪些精彩活动？")
+```
+
+```{r}
+# 获取营养信息
+chat$chat("帮我设计一份 1000 卡路里的套餐，包含一杯含糖可乐，且价格不超过 30 元。")
+```
+
+
+### Gemini-cli 配置
+编辑项目根目录下的 `.gemini/settings.json` 或全局配置文件 `~/.gemini/settings.json`：
+
+
+```json
+{
+  "mcpServers": {
+    "mcd-mcp": {
+      "url": "https://mcp.mcd.cn/mcp-servers/mcd-mcp",
+      "headers": {
+        "Authorization": "Bearer Your-Token"
+      }
+    }
+  }
+}
+```
+
+### Claude Code 配置
+在项目根目录创建或编辑 `.mcp.json`：
+
+```json
+{
+  "mcpServers": {
+    "mcd-mcp": {
+      "type": "http",
+      "url": "https://mcp.mcd.cn/mcp-servers/mcd-mcp",
+      "headers": {
+        "Authorization": "Bearer Your-Token"
+      }
+    }
+  }
+}
+```
+
+:::

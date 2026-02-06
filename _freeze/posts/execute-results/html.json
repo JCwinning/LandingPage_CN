@@ -2,10 +2,8 @@
   "hash": "527bc957622376f760722139bca34d98",
   "result": {
     "engine": "knitr",
-    "markdown": "---\ntitle: \"所有文章\"\nlisting:\n  contents: posts\n  type: table\n  sort: \"date desc\"\n  page-size: 100\n  categories: false\n  fields: [image, date, title, categories]\n  filter-ui: [date, title, categories]\n  \n---\n\n\n\n::: {.cell}\n\n:::\n\n\n截至 2026-02-05。文章总数：12 ",
-    "supporting": [
-      "posts_files"
-    ],
+    "markdown": "---\ntitle: \"所有文章\"\nlisting:\n  contents: posts\n  type: table\n  sort: \"date desc\"\n  page-size: 100\n  categories: false\n  fields: [image, date, title, categories]\n  filter-ui: [date, title, categories]\n  \n---\n\n\n\n::: {.cell}\n\n:::\n\n\n截至 2026-02-06。文章总数：13 ",
+    "supporting": [],
     "filters": [
       "rmarkdown/pagebreak.lua"
     ],

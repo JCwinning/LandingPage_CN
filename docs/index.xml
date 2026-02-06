@@ -10,7 +10,471 @@
 <atom:link href="https://jcwinning.github.io/LandingPage/index.xml" rel="self" type="application/rss+xml"/>
 <description>由 Quarto 构建的 AI 博客</description>
 <generator>quarto-1.8.26</generator>
-<lastBuildDate>Thu, 29 Jan 2026 16:00:00 GMT</lastBuildDate>
+<lastBuildDate>Thu, 05 Feb 2026 16:00:00 GMT</lastBuildDate>
+<item>
+  <title>麦当劳 MCP</title>
+  <dc:creator>Tony D</dc:creator>
+  <link>https://jcwinning.github.io/LandingPage/posts/mcdonald_mcp/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<section id="麦当劳-mcp-文档" class="level1">
+<h1>麦当劳 MCP 文档</h1>
+<p>麦当劳 MCP (Model Context Protocol) 服务允许 AI 助手直接访问麦当劳中国的活动日历、优惠券和营养信息。</p>
+<p><a href="https://github.com/M-China/mcd-mcp-server">麦当劳 Github</a></p>
+<section id="获取-token" class="level2">
+<h2 class="anchored" data-anchor-id="获取-token">1. 获取 Token</h2>
+<ol type="1">
+<li>访问 <a href="https://open.mcd.cn/mcp">麦当劳 MCP 开放平台</a>。</li>
+<li>登录并申请您的个人 MCP Token。</li>
+<li>获得 Token 后，请替换下面配置中的 <code>Your-Token</code>。</li>
+</ol>
+</section>
+<section id="配置-mcp-服务" class="level2">
+<h2 class="anchored" data-anchor-id="配置-mcp-服务">2. 配置 MCP 服务</h2>
+<p>您可以将麦当劳 MCP 集成到支持 MCP 协议的各种工具中。</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs"><li class="nav-item"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" aria-controls="tabset-1-1" aria-selected="true" href="">与 ellmer Chat (R) 集成</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" aria-controls="tabset-1-2" aria-selected="false" href="">Gemini-cli 配置</a></li><li class="nav-item"><a class="nav-link" id="tabset-1-3-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-3" aria-controls="tabset-1-3" aria-selected="false" href="">Claude Code 配置</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" aria-labelledby="tabset-1-1-tab">
+<p><code>mcptools</code> 包可以在 R 中实现 MCP 服务器与 ellmer chat 的无缝集成。以下是配合 ellmer 设置和使用麦当劳 MCP 的方法。</p>
+<section id="步骤-1-安装所需包" class="level4">
+<h4 class="anchored" data-anchor-id="步骤-1-安装所需包">步骤 1: 安装所需包</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 如果尚未安装，请安装相关包</span></span>
+<span id="cb1-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">install.packages</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ellmer"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"mcptools"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"dotenv"</span>))</span></code></pre></div></div>
+</div>
+</section>
+<section id="步骤-2-创建-mcp-配置文件" class="level4">
+<h4 class="anchored" data-anchor-id="步骤-2-创建-mcp-配置文件">步骤 2: 创建 MCP 配置文件</h4>
+<p>在项目目录中创建一个名为 <code>mcp_config.json</code> 的文件，内容如下：</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb2-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb2-2">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"mcpServers"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb2-3">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"mcd-mcp"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb2-4">      <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"command"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"npx"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-5">      <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"args"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">[</span></span>
+<span id="cb2-6">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"mcp-remote"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-7">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://mcp.mcd.cn/mcp-servers/mcd-mcp"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-8">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"--header"</span><span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb2-9">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Authorization: Bearer Your-Token"</span></span>
+<span id="cb2-10">      <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">]</span></span>
+<span id="cb2-11">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb2-12">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb2-13"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div></div>
+</div>
+<p>将 <code>Your-Token</code> 替换为您从 <a href="https://open.mcd.cn/mcp">麦当劳 MCP 开放平台</a> 获取的实际 MCP token。</p>
+</section>
+<section id="步骤-3-加载库和配置" class="level4">
+<h4 class="anchored" data-anchor-id="步骤-3-加载库和配置">步骤 3: 加载库和配置</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(ellmer)</span>
+<span id="cb3-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(mcptools)</span>
+<span id="cb3-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(dotenv)</span>
+<span id="cb3-4"></span>
+<span id="cb3-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 加载环境变量</span></span>
+<span id="cb3-6"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">load_dot_env</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">file =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".env"</span>)</span></code></pre></div></div>
+</div>
+</section>
+<section id="步骤-4-使用-mcp-工具初始化聊天" class="level4">
+<h4 class="anchored" data-anchor-id="步骤-4-使用-mcp-工具初始化聊天">步骤 4: 使用 MCP 工具初始化聊天</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 创建一个 ellmer 聊天对象（以 OpenRouter 为例）</span></span>
+<span id="cb4-2">chat <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">chat_openrouter</span>(</span>
+<span id="cb4-3">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">system_prompt =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"你是一个能够与麦当劳服务交互的得力助手。请使用中文回答，并保持简洁。"</span>,</span>
+<span id="cb4-4">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">api_key =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">Sys.getenv</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"OPENROUTER_API_KEY"</span>),</span>
+<span id="cb4-5">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">model =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"x-ai/grok-4.1-fast"</span>,</span>
+<span id="cb4-6">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">echo =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"output"</span></span>
+<span id="cb4-7">)</span>
+<span id="cb4-8"></span>
+<span id="cb4-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 从配置文件加载 MCP 工具</span></span>
+<span id="cb4-10">mcd_tools <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">mcp_tools</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">config =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"mcp_config.json"</span>)</span>
+<span id="cb4-11"></span>
+<span id="cb4-12"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 向聊天对象注册 MCP 工具</span></span>
+<span id="cb4-13">chat<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">set_tools</span>(mcd_tools)</span></code></pre></div></div>
+</div>
+</section>
+<section id="步骤-5-配合-mcp-集成进行聊天" class="level4">
+<h4 class="anchored" data-anchor-id="步骤-5-配合-mcp-集成进行聊天">步骤 5: 配合 MCP 集成进行聊天</h4>
+<p>现在您可以提问，AI 将使用麦当劳 MCP 工具：</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 查询可用优惠券</span></span>
+<span id="cb5-2">chat<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">chat</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"现在有哪些可用的优惠券？"</span>)</span></code></pre></div></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>目前您有以下已领取的麦麦省优惠券可用：
+
+- 北非蛋风味麦满分
+- 9.9元大薯条
+- 9.9元新派组合
+- 王牌炸鸡双拼盒
+- 辣翅成双
+- 脆汁鸡任选
+- 9.9元那么大鸡排
+- 6.9元甜酷任选
+- 北非蛋风味麦满分特惠组合
+- 13.5元中薯条买一送一
+- 19.9元辣翅成双
+- 29.9元明星堡堡搭</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 自动领取所有优惠券</span></span>
+<span id="cb7-2">chat<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">chat</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"帮我领取所有可用的优惠券。"</span>)</span></code></pre></div></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>暂无可领取的优惠券。已领取的券可继续使用。</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 查看您的优惠券</span></span>
+<span id="cb9-2">chat<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">chat</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"显示我目前所有的优惠券。"</span>)</span></code></pre></div></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>您目前有 **12 张可用优惠券**（第1/1页）：
+
+1. **9.9元那么大鸡排** ¥9.9 | 至2026-02-06 周1-5 | 今日到期，到店/外送
+2. **6.9元甜酷任选** ¥6.9 | 至2026-02-06 周1-5 | 今日到期，到店/外送
+3. **13.5元中薯条买一送一** ¥13.5 | 至2026-02-06 周1-5 | 今日到期，到店/外送
+4. **19.9元辣翅成双** ¥19.9 | 至2026-02-06 周1-5 | 今日到期，到店/外送
+5. **29.9元明星堡堡搭** ¥29.9 | 至2026-02-06 周1-5 | 今日到期，到店/外送
+6. **9.9元大薯条** ¥9.9 | 至2026-02-13 周1-5 | 到店/外送
+7. **9.9元新派组合** ¥9.9 | 至2026-02-13 周1-5 | 到店/外送
+8. **王牌炸鸡双拼盒** ¥39.9 | 至2026-02-08 周六日 | 到店/外送
+9. **辣翅成双** ¥19.9 | 至2026-02-08 周六日 | 到店/外送
+10. **脆汁鸡任选** ¥9.9 | 至2026-02-08 周六日 | 到店/外送
+11. **北非蛋风味麦满分** ¥12.9 | 至2026-02-10 早间 | 到店
+12. **北非蛋风味麦满分特惠组合** ¥14.9 | 至2026-02-10 早间 | 到店</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 查询活动日历</span></span>
+<span id="cb11-2">chat<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">chat</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"接下来的 15 天里有哪些精彩活动？"</span>)</span></code></pre></div></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>### 接下来15天（2026.2.7-2.20）精彩活动：
+
+#### **2月7日（明日）**
+- **预约麦金喜抽奖**：赢小马宝莉大麻将礼盒（00:00开启）。
+- **麦麦盖毯**：128元+100积分解锁暖冬盖毯（麦麦商城）。
+
+#### **持续/近期活动**（多至2.17）
+- **麦乐鸡侠福利**（2.4-17）：下单麦乐鸡备注惊喜，赢小食。
+- **麦love情人节**（2.4-15）：5款卡面礼卡，拉CP送礼。
+- **新春限定新品**：金拱门虾堡、金菠萝鸡扒麦满分、金运糕升等。
+- **麦麦省优惠**：9.9鸡排/薯条、19.9辣翅等（已领券可用）。
+- **非遗灯会**：北京/上海等城市打卡，集章赢礼。
+- **一灯一愿小票**：APP/自助机打印心愿灯票。
+
+更多详情可查麦当劳APP活动页，部分限时/区域。</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 获取营养信息</span></span>
+<span id="cb13-2">chat<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">chat</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"帮我设计一份 1000 卡路里的套餐，包含一杯含糖可乐，且价格不超过 30 元。"</span>)</span></code></pre></div></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>**推荐1000kcal套餐（总价≈29元，使用您的优惠券）：**
+
+- **那么大鸡排**（9.9元券）：385kcal
+- **大薯条**（9.9元券）：379kcal
+- **可乐中杯**（单点≈10元）：147kcal
+
+**总热量**：911kcal（接近1000kcal，搭配店内免费苹果片+32kcal达943kcal）  
+**总价格**：29元以内，到店/外送可用（今日券有效）。营养均衡，主食+碳水+饮品。</code></pre>
+</div>
+</div>
+</section>
+</div>
+<div id="tabset-1-2" class="tab-pane" aria-labelledby="tabset-1-2-tab">
+<p>编辑项目根目录下的 <code>.gemini/settings.json</code> 或全局配置文件 <code>~/.gemini/settings.json</code>：</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb15-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb15-2">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"mcpServers"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb15-3">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"mcd-mcp"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb15-4">      <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"url"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://mcp.mcd.cn/mcp-servers/mcd-mcp"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb15-5">      <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"headers"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb15-6">        <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"Authorization"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Bearer Your-Token"</span></span>
+<span id="cb15-7">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb15-8">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb15-9">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb15-10"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div></div>
+</div>
+<div id="tabset-1-3" class="tab-pane" aria-labelledby="tabset-1-3-tab">
+<p>在项目根目录创建或编辑 <code>.mcp.json</code>：</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb16-1"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb16-2">  <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"mcpServers"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb16-3">    <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"mcd-mcp"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb16-4">      <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"type"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"http"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb16-5">      <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"url"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://mcp.mcd.cn/mcp-servers/mcd-mcp"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">,</span></span>
+<span id="cb16-6">      <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"headers"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">{</span></span>
+<span id="cb16-7">        <span class="dt" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">"Authorization"</span><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">:</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Bearer Your-Token"</span></span>
+<span id="cb16-8">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb16-9">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb16-10">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span>
+<span id="cb16-11"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">}</span></span></code></pre></div></div>
+</div>
+</div>
+</div>
+
+
+<!-- -->
+
+</section>
+</section>
+
+ ]]></description>
+  <category>AI</category>
+  <category>MCP</category>
+  <guid>https://jcwinning.github.io/LandingPage/posts/mcdonald_mcp/</guid>
+  <pubDate>Thu, 05 Feb 2026 16:00:00 GMT</pubDate>
+  <media:content url="https://jcwinning.github.io/LandingPage/posts/mcdonald_mcp/images/0.png" medium="image" type="image/png" height="99" width="144"/>
+</item>
 <item>
   <title>AI 裁判 (AI Judge)</title>
   <dc:creator>Tony D</dc:creator>

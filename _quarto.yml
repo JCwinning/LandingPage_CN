@@ -44,7 +44,7 @@ website:
       - icon: rss
         href: index.xml
   page-footer:
-    right: "Not right reserved 2026"
+      right: "This blog is built with ❤️ and [Quarto](https://quarto.org/)."
 
 
 format:
