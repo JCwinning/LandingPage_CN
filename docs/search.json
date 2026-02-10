@@ -963,7 +963,7 @@
     "href": "posts/vibepong/index.html",
     "title": "Vibe game: 4人乒乓球游戏与游戏数据分析",
     "section": "",
-    "text": "VibePong 是一款简单而引人入胜的乒乓球风格游戏，玩家可以互相竞争，也可以与 CPU 对手较量。游戏具有各种指标，如球速、游戏持续时间和玩家表现，这些指标记录在 CSV 文件中以供分析。\n立即玩：https://jcwinning.github.io/vibepong"
+    "text": "VibePong 是一款简单而引人入胜的乒乓球风格游戏，最多4位玩家可以互相竞争，也可以与 CPU 对手较量。游戏具有各种指标，如球速、游戏持续时间和玩家表现，这些指标记录在 CSV 文件中以供分析。\n立即玩：https://jcwinning.github.io/vibepong"
   },
   {
     "objectID": "posts/vibepong/index.html#逐个动作数据",

@@ -451,7 +451,7 @@ gtag('config', 'G-9NBJ66WLRT', { 'anonymize_ip': true});
 
 <section id="游戏介绍" class="level1">
 <h1>游戏介绍</h1>
-<p>VibePong 是一款简单而引人入胜的乒乓球风格游戏，玩家可以互相竞争，也可以与 CPU 对手较量。游戏具有各种指标，如球速、游戏持续时间和玩家表现，这些指标记录在 CSV 文件中以供分析。</p>
+<p>VibePong 是一款简单而引人入胜的乒乓球风格游戏，最多4位玩家可以互相竞争，也可以与 CPU 对手较量。游戏具有各种指标，如球速、游戏持续时间和玩家表现，这些指标记录在 CSV 文件中以供分析。</p>
 <p>立即玩：<a href="https://jcwinning.github.io/vibepong">https://jcwinning.github.io/vibepong</a></p>
 <p><img src="images/my screenshots 3.png" height="500"> <img src="images/my screenshots 1.png" height="500"></p>
 </section>
@@ -462,7 +462,7 @@ gtag('config', 'G-9NBJ66WLRT', { 'anonymize_ip': true});
 <section id="第一步读取数据" class="level1">
 <h1>第一步：读取数据</h1>
 <p>首先，我们在 <code>game_data</code> 目录中搜索所有摘要和动作 CSV 文件，并将它们加载到 pandas DataFrame 中。</p>
-<div id="20163e06" class="cell" data-execution_count="1">
+<div id="0ef1e166" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Show Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
@@ -490,13 +490,13 @@ gtag('config', 'G-9NBJ66WLRT', { 'anonymize_ip': true});
 </div>
 <section id="逐个动作数据" class="level2">
 <h2 class="anchored" data-anchor-id="逐个动作数据">逐个动作数据</h2>
-<div id="92dc0f80" class="cell" data-execution_count="2">
+<div id="1ccaf993" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Show Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first few rows of summary data</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>df_actions.head()</span></code></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="18">
+<div class="cell-output cell-output-display" data-execution_count="2">
 <div>
 
 
@@ -555,13 +555,13 @@ gtag('config', 'G-9NBJ66WLRT', { 'anonymize_ip': true});
 </section>
 <section id="逐场游戏数据" class="level2">
 <h2 class="anchored" data-anchor-id="逐场游戏数据">逐场游戏数据</h2>
-<div id="1dc2423c" class="cell" data-execution_count="3">
+<div id="5cdb15db" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Show Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first few rows of summary data</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>df_summary.head()</span></code></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="19">
+<div class="cell-output cell-output-display" data-execution_count="3">
 <div>
 
 
@@ -658,7 +658,7 @@ gtag('config', 'G-9NBJ66WLRT', { 'anonymize_ip': true});
 <section id="第二步数据清洗" class="level1">
 <h1>第二步：数据清洗</h1>
 <p>我们将通过将时间戳转换为日期时间对象、处理数值类型并确保一致性来清洗数据。</p>
-<div id="7f38d6ea" class="cell" data-execution_count="4">
+<div id="a60e58e1" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Show Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Convert Date in summary to datetime</span></span>
@@ -698,7 +698,7 @@ Lives           0
 Hits            0
 dtype: int64</code></pre>
 </div>
-<div class="cell-output cell-output-display" data-execution_count="20">
+<div class="cell-output cell-output-display" data-execution_count="4">
 <div>
 
 
@@ -797,7 +797,7 @@ dtype: int64</code></pre>
 <section id="获胜分布" class="level2">
 <h2 class="anchored" data-anchor-id="获胜分布">获胜分布</h2>
 <p>谁赢得了最多的比赛？</p>
-<div id="e9bcf506" class="cell" data-execution_count="5">
+<div id="9758f264" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Show Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
@@ -831,7 +831,7 @@ dtype: int64</code></pre>
 <section id="游戏时长-vs.-球速" class="level2">
 <h2 class="anchored" data-anchor-id="游戏时长-vs.-球速">游戏时长 vs.&nbsp;球速</h2>
 <p>更高的球速会导致游戏时间更短吗？</p>
-<div id="813c0c64" class="cell" data-execution_count="6">
+<div id="9ed2291c" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Show Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
@@ -851,7 +851,7 @@ dtype: int64</code></pre>
 <section id="每位玩家的总击球数" class="level2">
 <h2 class="anchored" data-anchor-id="每位玩家的总击球数">每位玩家的总击球数</h2>
 <p>追踪不同游戏会话中的技巧（击球数）。</p>
-<div id="d945ce81" class="cell" data-execution_count="7">
+<div id="9cc15f6b" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Show Code</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
@@ -871,7 +871,7 @@ dtype: int64</code></pre>
 <section id="动作序列" class="level2">
 <h2 class="anchored" data-anchor-id="动作序列">动作序列</h2>
 <p>分析所有游戏中动作的频率。</p>
-<div id="b8ab4544" class="cell" data-execution_count="8">
+<div id="0974ea81" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Show Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>action_counts <span class="op">=</span> df_actions[<span class="st">'Action'</span>].value_counts().head(<span class="dv">10</span>)</span>
@@ -1322,7 +1322,7 @@ dtype: int64</code></pre>
 <span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="fu"># 游戏介绍</span></span>
 <span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>VibePong 是一款简单而引人入胜的乒乓球风格游戏，玩家可以互相竞争，也可以与 CPU 对手较量。游戏具有各种指标，如球速、游戏持续时间和玩家表现，这些指标记录在 CSV 文件中以供分析。</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>VibePong 是一款简单而引人入胜的乒乓球风格游戏，最多4位玩家可以互相竞争，也可以与 CPU 对手较量。游戏具有各种指标，如球速、游戏持续时间和玩家表现，这些指标记录在 CSV 文件中以供分析。</span>
 <span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>立即玩：<span class="co">[</span><span class="ot">https://jcwinning.github.io/vibepong</span><span class="co">](https://jcwinning.github.io/vibepong)</span></span>
 <span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a></span>
