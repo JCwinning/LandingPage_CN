@@ -10,7 +10,6 @@ toc: false
 
 <a href="段晋潮 Tony Duan简历.pdf" download class="btn btn-primary" style="margin-bottom: 1rem;">📥 下载简历</a>
 
-## 段晋潮 Tony Duan
 
 **电话:** 13609618820  
 **邮箱:** jcflyingco@outlook.com
@@ -74,7 +73,7 @@ toc: false
 
 <a href="Tony Duan Resume.pdf" download class="btn btn-primary" style="margin-bottom: 1rem;">📥 Download Resume</a>
 
-## Tony Jinchao Duan
+
 
 **Telephone:** 13609618820  
 **Email:** jcflyingco@outlook.com

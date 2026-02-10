@@ -1,0 +1,164 @@
+---
+title: "Vibe game: 4人乒乓球游戏与游戏数据分析"
+author: "Tony D"
+date: "2026-02-10"
+categories: [AI,Games,Data Analysis]
+image: "images/my screenshots 3.png"
+
+format:
+  html:
+    toc: true
+    code-fold: true
+    code-tools: true
+    code-summary: "Show Code"
+    code-copy: false
+
+execute:
+  echo: true
+  warning: false
+---
+
+# 游戏介绍
+
+VibePong 是一款简单而引人入胜的乒乓球风格游戏，玩家可以互相竞争，也可以与 CPU 对手较量。游戏具有各种指标，如球速、游戏持续时间和玩家表现，这些指标记录在 CSV 文件中以供分析。
+
+立即玩：[https://jcwinning.github.io/vibepong](https://jcwinning.github.io/vibepong)
+
+![](images/my screenshots 3.png){height="500"}   ![](images/my screenshots 1.png){height="500"}
+
+# 游戏数据分析
+
+在本文档中，我们将分析 VibePong 生成的游戏数据。分析涵盖数据摄取、清洗以及带有可视化的探索性数据分析 (EDA)。
+
+# 第一步：读取数据
+
+首先，我们在 `game_data` 目录中搜索所有摘要和动作 CSV 文件，并将它们加载到 pandas DataFrame 中。
+
+```{python}
+import pandas as pd
+import glob
+import os
+
+# Define the data path
+data_dir = './game_data'
+
+# Get lists of files
+summary_files = glob.glob(os.path.join(data_dir, 'vibepong_summary_*.csv'))
+action_files = glob.glob(os.path.join(data_dir, 'vibepong_actions_*.csv'))
+
+print(f"Found {len(summary_files)} summary files and {len(action_files)} action files.")
+
+# Load and combine summary data
+df_summary = pd.concat([pd.read_csv(f) for f in summary_files], ignore_index=True)
+
+# Load and combine action data
+df_actions = pd.concat([pd.read_csv(f) for f in action_files], ignore_index=True)
+```
+
+## 逐个动作数据
+
+```{python}
+# Display the first few rows of summary data
+df_actions.head()
+```
+
+## 逐场游戏数据
+
+```{python}
+# Display the first few rows of summary data
+df_summary.head()
+```
+
+# 第二步：数据清洗
+
+我们将通过将时间戳转换为日期时间对象、处理数值类型并确保一致性来清洗数据。
+
+```{python}
+# 1. Convert Date in summary to datetime
+df_summary['Date'] = pd.to_datetime(df_summary['Date'])
+
+# 2. Ensure numeric types for metrics
+numeric_cols = ['Duration (s)', 'Ball Speed', 'Lives', 'Hits']
+for col in numeric_cols:
+    df_summary[col] = pd.to_numeric(df_summary[col], errors='coerce')
+
+# 3. Handle Action data timestamps
+# Action timestamps are in ms (offset from game start)
+df_actions['Timestamp (ms)'] = pd.to_numeric(df_actions['Timestamp (ms)'], errors='coerce')
+
+# 4. Check for missing values
+missing_counts = df_summary.isnull().sum()
+print("Missing values in Summary data:")
+print(missing_counts)
+
+# Drop redundant rows if any (e.g. empty players if they didn't join)
+df_summary = df_summary.dropna(subset=['Player'])
+
+# Final head view after cleaning
+df_summary.head()
+```
+
+# 第三步：EDA 与可视化
+
+现在我们将查看一些关键绩效指标并可视化游戏结果。
+
+## 获胜分布
+
+谁赢得了最多的比赛？
+
+```{python}
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Set aesthetic style
+# Use 'Arial Unicode MS' on macOS to support Chinese characters
+sns.set_theme(style="whitegrid", font="Arial Unicode MS")
+plt.rcParams['axes.unicode_minus'] = False
+
+# Count unique games per winner
+unique_games = df_summary.drop_duplicates(subset=['Game ID'])
+winner_counts = unique_games['Winner'].value_counts()
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=winner_counts.index, y=winner_counts.values, palette="viridis")
+plt.title('Number of Wins by Player/CPU (获胜次数)', fontsize=15)
+plt.ylabel('Games Won (获胜局数)')
+plt.xlabel('Winner (获胜者)')
+plt.show()
+```
+
+## 游戏时长 vs. 球速
+
+更高的球速会导致游戏时间更短吗？
+
+```{python}
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=unique_games, x='Ball Speed', y='Duration (s)', hue='Winner', s=100)
+plt.title('Game Duration vs Ball Speed', fontsize=15)
+plt.show()
+```
+
+## 每位玩家的总击球数
+
+追踪不同游戏会话中的技巧（击球数）。
+
+```{python}
+plt.figure(figsize=(12, 6))
+sns.boxplot(data=df_summary, x='Player', y='Hits', palette="magma")
+plt.title('Distribution of Hits per Player', fontsize=15)
+plt.show()
+```
+
+## 动作序列
+
+分析所有游戏中动作的频率。
+
+```{python}
+action_counts = df_actions['Action'].value_counts().head(10)
+
+plt.figure(figsize=(12, 8))
+action_counts.plot(kind='barh', color='skyblue')
+plt.title('Most Frequent Actions/Events', fontsize=15)
+plt.gca().invert_yaxis()
+plt.show()
+```

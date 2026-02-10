@@ -2,6 +2,7 @@
   {
     "listing": "/posts.html",
     "items": [
+      "/posts/vibepong/index.html",
       "/posts/AI_milktea/index.html",
       "/posts/mcdonald_mcp/index.html",
       "/posts/AI judge/index.html",
@@ -14,6 +15,7 @@
       "/posts/weight-tracking/index.html",
       "/posts/whisky-tasting/index.html",
       "/posts/yolo-app/index.html",
+      "/posts/MCP/index.html",
       "/posts/RAG/index.html",
       "/posts/openrouter/index.html"
     ]
@@ -21,6 +23,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/vibepong/index.html",
       "/posts/AI_milktea/index.html",
       "/posts/mcdonald_mcp/index.html",
       "/posts/AI judge/index.html",
@@ -33,6 +36,7 @@
       "/posts/weight-tracking/index.html",
       "/posts/whisky-tasting/index.html",
       "/posts/yolo-app/index.html",
+      "/posts/MCP/index.html",
       "/posts/RAG/index.html",
       "/posts/openrouter/index.html"
     ]
