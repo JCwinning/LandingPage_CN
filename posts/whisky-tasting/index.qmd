@@ -1,5 +1,5 @@
 ---
-title: "基于 RAG 的威士忌品鉴笔记"
+title: "美酒评鉴Agent系统：基于酒评家RAG"
 author: "Tony D"
 date: "2025-11-05"
 categories: [AI, API, tutorial]

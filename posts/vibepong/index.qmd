@@ -1,8 +1,8 @@
 ---
-title: "Vibe game: 4人乒乓球游戏与游戏数据分析"
+title: "Vibe 游戏： 4人乒乓球与游戏数据分析"
 author: "Tony D"
 date: "2026-02-10"
-categories: [AI,Games,Data Analysis]
+categories: [AI, 游戏, 数据分析]
 image: "images/my screenshots 3.png"
 
 format:
@@ -10,7 +10,7 @@ format:
     toc: true
     code-fold: true
     code-tools: true
-    code-summary: "Show Code"
+    code-summary: "显示代码"
     code-copy: false
 
 execute:
@@ -18,118 +18,109 @@ execute:
   warning: false
 ---
 
-# 游戏介绍
+# 游戏简介
 
-VibePong 是一款简单而引人入胜的乒乓球风格游戏，最多4位玩家可以互相竞争，也可以与 CPU 对手较量。游戏具有各种指标，如球速、游戏持续时间和玩家表现，这些指标记录在 CSV 文件中以供分析。
+VibePong 是一款简单而有趣的乒乓类游戏，支持最多 4 名玩家同台竞技，也支持与 CPU 对手作战。游戏会记录各种指标，如球速、游戏时长和玩家表现，并将这些数据保存到 CSV 文件中以便进行分析。
 
-立即玩：[https://jcwinning.github.io/vibepong](https://jcwinning.github.io/vibepong)
+立即游玩：[https://jcwinning.github.io/vibepong](https://jcwinning.github.io/vibepong)
 
 ![](images/my screenshots 3.png){height="500"}   ![](images/my screenshots 1.png){height="500"}
 
 # 游戏数据分析
 
-在本文档中，我们将分析 VibePong 生成的游戏数据。分析涵盖数据摄取、清洗以及带有可视化的探索性数据分析 (EDA)。
+在本文档中，我们分析了 VibePong 生成的游戏数据。分析内容涵盖数据提取、清洗以及带有可视化效果的探索性数据分析 (EDA)。
 
 # 第一步：读取数据
 
-首先，我们在 `game_data` 目录中搜索所有摘要和动作 CSV 文件，并将它们加载到 pandas DataFrame 中。
+首先，我们在 `game_data` 目录中搜索所有的摘要 (summary) 和动作 (action),遥感(telemetry) CSV 文件，并将其加载到 pandas DataFrame 中。
 
 ```{python}
 import pandas as pd
 import glob
 import os
 
-# Define the data path
+# 加载 game_data 目录下的所有 CSV 文件
 data_dir = './game_data'
+def load_combined(pattern):
+    files = glob.glob(os.path.join(data_dir, f'vibepong_{pattern}_*.csv'))
+    return pd.concat([pd.read_csv(f) for f in files], ignore_index=True) if files else pd.DataFrame()
 
-# Get lists of files
-summary_files = glob.glob(os.path.join(data_dir, 'vibepong_summary_*.csv'))
-action_files = glob.glob(os.path.join(data_dir, 'vibepong_actions_*.csv'))
+df_summary = load_combined('summary')
+df_actions = load_combined('actions')
+df_telemetry = load_combined('telemetry')
 
-print(f"Found {len(summary_files)} summary files and {len(action_files)} action files.")
+print(f"已加载 {len(df_summary)} 行摘要数据，{len(df_actions)} 条动作记录，以及 {len(df_telemetry)} 条遥测记录。")
+```
 
-# Load and combine summary data
-df_summary = pd.concat([pd.read_csv(f) for f in summary_files], ignore_index=True)
-
-# Load and combine action data
-df_actions = pd.concat([pd.read_csv(f) for f in action_files], ignore_index=True)
+## 逐场游戏数据
+```{python}
+# Display the first few rows of summary data
+df_summary.head()
 ```
 
 ## 逐个动作数据
-
 ```{python}
 # Display the first few rows of summary data
 df_actions.head()
 ```
 
-## 逐场游戏数据
 
+## 时间序列数据
 ```{python}
 # Display the first few rows of summary data
-df_summary.head()
+df_telemetry.head()
 ```
 
 # 第二步：数据清洗
 
-我们将通过将时间戳转换为日期时间对象、处理数值类型并确保一致性来清洗数据。
+我们将通过将时间戳转换为 datetime 对象、处理数值类型并确保一致性来清洗数据。
 
 ```{python}
-# 1. Convert Date in summary to datetime
+# 清洗摘要数据
 df_summary['Date'] = pd.to_datetime(df_summary['Date'])
-
-# 2. Ensure numeric types for metrics
-numeric_cols = ['Duration (s)', 'Ball Speed', 'Lives', 'Hits']
-for col in numeric_cols:
-    df_summary[col] = pd.to_numeric(df_summary[col], errors='coerce')
-
-# 3. Handle Action data timestamps
-# Action timestamps are in ms (offset from game start)
-df_actions['Timestamp (ms)'] = pd.to_numeric(df_actions['Timestamp (ms)'], errors='coerce')
-
-# 4. Check for missing values
-missing_counts = df_summary.isnull().sum()
-print("Missing values in Summary data:")
-print(missing_counts)
-
-# Drop redundant rows if any (e.g. empty players if they didn't join)
+numeric_summary = ['Duration (s)', 'Ball Speed', 'Lives', 'Hits']
+df_summary[numeric_summary] = df_summary[numeric_summary].apply(pd.to_numeric, errors='coerce')
 df_summary = df_summary.dropna(subset=['Player'])
 
-# Final head view after cleaning
+# 清洗动作数据
+df_actions['Timestamp (ms)'] = pd.to_numeric(df_actions['Timestamp (ms)'], errors='coerce')
+
 df_summary.head()
 ```
 
-# 第三步：EDA 与可视化
+# 第三步：EDA 和可视化
 
 现在我们将查看一些关键绩效指标并可视化游戏结果。
 
 ## 获胜分布
-
-谁赢得了最多的比赛？
 
 ```{python}
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Set aesthetic style
-# Use 'Arial Unicode MS' on macOS to support Chinese characters
-sns.set_theme(style="whitegrid", font="Arial Unicode MS")
+sns.set_theme(style="whitegrid")
+plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
 plt.rcParams['axes.unicode_minus'] = False
 
-# Count unique games per winner
+```
+
+谁赢得了最多的游戏？
+
+```{python}
+# 计算每位获胜者的独特游戏场次
 unique_games = df_summary.drop_duplicates(subset=['Game ID'])
 winner_counts = unique_games['Winner'].value_counts()
 
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(10, 5))
 sns.barplot(x=winner_counts.index, y=winner_counts.values, palette="viridis")
-plt.title('Number of Wins by Player/CPU (获胜次数)', fontsize=15)
-plt.ylabel('Games Won (获胜局数)')
-plt.xlabel('Winner (获胜者)')
+plt.title('玩家/CPU 获胜场次分布', fontsize=14)
 plt.show()
 ```
 
 ## 游戏时长 vs. 球速
 
-更高的球速会导致游戏时间更短吗？
+更高的球速会导致游戏时长变短吗？
 
 ```{python}
 plt.figure(figsize=(10, 6))
@@ -138,12 +129,12 @@ plt.title('Game Duration vs Ball Speed', fontsize=15)
 plt.show()
 ```
 
-## 每位玩家的总击球数
+## 每个玩家的总击球数
 
-追踪不同游戏会话中的技巧（击球数）。
+跟踪不同游戏场次的技能（击球数）表现。
 
 ```{python}
-plt.figure(figsize=(12, 6))
+plt.figure(figsize=(10, 6))
 sns.boxplot(data=df_summary, x='Player', y='Hits', palette="magma")
 plt.title('Distribution of Hits per Player', fontsize=15)
 plt.show()
@@ -156,9 +147,66 @@ plt.show()
 ```{python}
 action_counts = df_actions['Action'].value_counts().head(10)
 
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(8, 7))
 action_counts.plot(kind='barh', color='skyblue')
 plt.title('Most Frequent Actions/Events', fontsize=15)
 plt.gca().invert_yaxis()
 plt.show()
 ```
+
+# 第四步：遥测数据分析
+
+现在让我们分析高频遥测数据，该数据每 100 毫秒捕获一次球和球拍的位置。
+
+
+## 随时间变化的球速
+
+球速在所有游戏中是如何演变的？
+
+```{python}
+if not df_telemetry.empty:
+    plt.figure(figsize=(10, 5))
+    for gid in df_telemetry['Game ID'].unique()[:10]:
+        df_g = df_telemetry[df_telemetry['Game ID'] == gid]
+        plt.plot(df_g['Timestamp (ms)']/1000, df_g['Ball Speed'], alpha=0.6, label=f'游戏 {gid[-4:]}')
+    
+    plt.title('球速演变（前 10 场游戏）')
+    plt.xlabel('时间 (秒)')
+    plt.ylabel('速度')
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=8)
+    plt.tight_layout()
+    plt.show()
+```
+
+## 球轨迹热图
+
+球在场地的哪个位置停留时间最长？
+
+```{python}
+if not df_telemetry.empty:
+    plt.figure(figsize=(10, 6))
+    plt.hist2d(df_telemetry['Ball X'], df_telemetry['Ball Y'], bins=50, cmap='hot')
+    plt.colorbar(label='采样点')
+    plt.title('球轨迹热图')
+    plt.show()
+```
+
+## 球拍移动分析
+
+哪些玩家移动球拍最频繁？
+
+```{python}
+if not df_telemetry.empty:
+    dist_cols = [c for c in df_telemetry.columns if 'Distance' in c and 'Ball' not in c]
+    movement = []
+    for gid in df_telemetry['Game ID'].unique():
+        df_g = df_telemetry[df_telemetry['Game ID'] == gid]
+        for col in dist_cols:
+            movement.append({'Player': col.split()[0], 'Distance': df_g[col].sum()})
+    
+    plt.figure(figsize=(10, 5))
+    sns.boxplot(data=pd.DataFrame(movement), x='Player', y='Distance', palette='coolwarm')
+    plt.title('各玩家球拍移动距离分布')
+    plt.show()
+```
+

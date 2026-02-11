@@ -12,7 +12,7 @@
 <generator>quarto-1.8.27</generator>
 <lastBuildDate>Mon, 09 Feb 2026 16:00:00 GMT</lastBuildDate>
 <item>
-  <title>Vibe game: 4人乒乓球游戏与游戏数据分析</title>
+  <title>Vibe 游戏： 4人乒乓球与游戏数据分析</title>
   <dc:creator>Tony D</dc:creator>
   <link>https://jcwinning.github.io/LandingPage/posts/vibepong/</link>
   <description><![CDATA[ 
@@ -21,22 +21,22 @@
 
 
 
-<section id="游戏介绍" class="level1">
-<h1>游戏介绍</h1>
-<p>VibePong 是一款简单而引人入胜的乒乓球风格游戏，最多4位玩家可以互相竞争，也可以与 CPU 对手较量。游戏具有各种指标，如球速、游戏持续时间和玩家表现，这些指标记录在 CSV 文件中以供分析。</p>
-<p>立即玩：<a href="https://jcwinning.github.io/vibepong">https://jcwinning.github.io/vibepong</a></p>
+<section id="游戏简介" class="level1">
+<h1>游戏简介</h1>
+<p>VibePong 是一款简单而有趣的乒乓类游戏，支持最多 4 名玩家同台竞技，也支持与 CPU 对手作战。游戏会记录各种指标，如球速、游戏时长和玩家表现，并将这些数据保存到 CSV 文件中以便进行分析。</p>
+<p>立即游玩：<a href="https://jcwinning.github.io/vibepong">https://jcwinning.github.io/vibepong</a></p>
 <p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/images/my screenshots 3.png" height="500"> <img src="https://jcwinning.github.io/LandingPage/posts/vibepong/images/my screenshots 1.png" height="500"></p>
 </section>
 <section id="游戏数据分析" class="level1">
 <h1>游戏数据分析</h1>
-<p>在本文档中，我们将分析 VibePong 生成的游戏数据。分析涵盖数据摄取、清洗以及带有可视化的探索性数据分析 (EDA)。</p>
+<p>在本文档中，我们分析了 VibePong 生成的游戏数据。分析内容涵盖数据提取、清洗以及带有可视化效果的探索性数据分析 (EDA)。</p>
 </section>
 <section id="第一步读取数据" class="level1">
 <h1>第一步：读取数据</h1>
-<p>首先，我们在 <code>game_data</code> 目录中搜索所有摘要和动作 CSV 文件，并将它们加载到 pandas DataFrame 中。</p>
-<div id="0ef1e166" class="cell" data-execution_count="1">
+<p>首先，我们在 <code>game_data</code> 目录中搜索所有的摘要 (summary) 和动作 (action),遥感(telemetry) CSV 文件，并将其加载到 pandas DataFrame 中。</p>
+<div id="701d9868" class="cell" data-execution_count="1">
 <details class="code-fold">
-<summary>Show Code</summary>
+<summary>显示代码</summary>
 <div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
@@ -51,98 +51,218 @@ font-style: inherit;">import</span> os</span>
 <span id="cb1-4"></span>
 <span id="cb1-5"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># Define the data path</span></span>
+font-style: inherit;"># 加载 game_data 目录下的所有 CSV 文件</span></span>
 <span id="cb1-6">data_dir <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'./game_data'</span></span>
-<span id="cb1-7"></span>
-<span id="cb1-8"><span class="co" style="color: #5E5E5E;
+<span id="cb1-7"><span class="kw" style="color: #003B4F;
 background-color: null;
-font-style: inherit;"># Get lists of files</span></span>
-<span id="cb1-9">summary_files <span class="op" style="color: #5E5E5E;
+font-weight: bold;
+font-style: inherit;">def</span> load_combined(pattern):</span>
+<span id="cb1-8">    files <span class="op" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">=</span> glob.glob(os.path.join(data_dir, <span class="st" style="color: #20794D;
+font-style: inherit;">=</span> glob.glob(os.path.join(data_dir, <span class="ss" style="color: #20794D;
 background-color: null;
-font-style: inherit;">'vibepong_summary_*.csv'</span>))</span>
-<span id="cb1-10">action_files <span class="op" style="color: #5E5E5E;
+font-style: inherit;">f'vibepong_</span><span class="sc" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">=</span> glob.glob(os.path.join(data_dir, <span class="st" style="color: #20794D;
+font-style: inherit;">{</span>pattern<span class="sc" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">'vibepong_actions_*.csv'</span>))</span>
-<span id="cb1-11"></span>
-<span id="cb1-12"><span class="bu" style="color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">_*.csv'</span>))</span>
+<span id="cb1-9">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> pd.concat([pd.read_csv(f) <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> f <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> files], ignore_index<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>) <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> files <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">else</span> pd.DataFrame()</span>
+<span id="cb1-10"></span>
+<span id="cb1-11">df_summary <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> load_combined(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'summary'</span>)</span>
+<span id="cb1-12">df_actions <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> load_combined(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'actions'</span>)</span>
+<span id="cb1-13">df_telemetry <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> load_combined(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'telemetry'</span>)</span>
+<span id="cb1-14"></span>
+<span id="cb1-15"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
-font-style: inherit;">f"Found </span><span class="sc" style="color: #5E5E5E;
+font-style: inherit;">f"已加载 </span><span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">{</span><span class="bu" style="color: null;
 background-color: null;
-font-style: inherit;">len</span>(summary_files)<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">len</span>(df_summary)<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">}</span><span class="ss" style="color: #20794D;
 background-color: null;
-font-style: inherit;"> summary files and </span><span class="sc" style="color: #5E5E5E;
+font-style: inherit;"> 行摘要数据，</span><span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">{</span><span class="bu" style="color: null;
 background-color: null;
-font-style: inherit;">len</span>(action_files)<span class="sc" style="color: #5E5E5E;
+font-style: inherit;">len</span>(df_actions)<span class="sc" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">}</span><span class="ss" style="color: #20794D;
 background-color: null;
-font-style: inherit;"> action files."</span>)</span>
-<span id="cb1-13"></span>
-<span id="cb1-14"><span class="co" style="color: #5E5E5E;
+font-style: inherit;"> 条动作记录，以及 </span><span class="sc" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># Load and combine summary data</span></span>
-<span id="cb1-15">df_summary <span class="op" style="color: #5E5E5E;
+font-style: inherit;">{</span><span class="bu" style="color: null;
 background-color: null;
-font-style: inherit;">=</span> pd.concat([pd.read_csv(f) <span class="cf" style="color: #003B4F;
+font-style: inherit;">len</span>(df_telemetry)<span class="sc" style="color: #5E5E5E;
 background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> f <span class="kw" style="color: #003B4F;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
 background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> summary_files], ignore_index<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>)</span>
-<span id="cb1-16"></span>
-<span id="cb1-17"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Load and combine action data</span></span>
-<span id="cb1-18">df_actions <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> pd.concat([pd.read_csv(f) <span class="cf" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> f <span class="kw" style="color: #003B4F;
-background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> action_files], ignore_index<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span><span class="va" style="color: #111111;
-background-color: null;
-font-style: inherit;">True</span>)</span></code></pre></div>
+font-style: inherit;"> 条遥测记录。"</span>)</span></code></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Found 8 summary files and 8 action files.</code></pre>
+<pre><code>已加载 75 行摘要数据，366 条动作记录，以及 658 条遥测记录。</code></pre>
 </div>
 </div>
-<section id="逐个动作数据" class="level2">
-<h2 class="anchored" data-anchor-id="逐个动作数据">逐个动作数据</h2>
-<div id="1ccaf993" class="cell" data-execution_count="2">
+<section id="逐场游戏数据" class="level2">
+<h2 class="anchored" data-anchor-id="逐场游戏数据">逐场游戏数据</h2>
+<div id="51d7ec8e" class="cell" data-execution_count="2">
 <details class="code-fold">
-<summary>Show Code</summary>
+<summary>显示代码</summary>
 <div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Display the first few rows of summary data</span></span>
-<span id="cb3-2">df_actions.head()</span></code></pre></div>
+<span id="cb3-2">df_summary.head()</span></code></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="2">
+<div class="cell-output cell-output-display" data-execution_count="58">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Game ID</th>
+<th data-quarto-table-cell-role="th">Date</th>
+<th data-quarto-table-cell-role="th">Duration (s)</th>
+<th data-quarto-table-cell-role="th">Winner</th>
+<th data-quarto-table-cell-role="th">Ball Speed</th>
+<th data-quarto-table-cell-role="th">Theme</th>
+<th data-quarto-table-cell-role="th">Language</th>
+<th data-quarto-table-cell-role="th">Player</th>
+<th data-quarto-table-cell-role="th">Lives</th>
+<th data-quarto-table-cell-role="th">Hits</th>
+<th data-quarto-table-cell-role="th">CPU Difficulty</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>G1770713902861-393</td>
+<td>2026-02-10T08:58:27.879Z</td>
+<td>5.02</td>
+<td>CPU</td>
+<td>6.56</td>
+<td>light</td>
+<td>en</td>
+<td>Player 1</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>G1770713902861-393</td>
+<td>2026-02-10T08:58:27.879Z</td>
+<td>5.02</td>
+<td>CPU</td>
+<td>6.56</td>
+<td>light</td>
+<td>en</td>
+<td>CPU</td>
+<td>1</td>
+<td>0</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>G1770783544585-550</td>
+<td>2026-02-11T04:20:01.889Z</td>
+<td>57.30</td>
+<td>Player 1</td>
+<td>20.38</td>
+<td>dark</td>
+<td>en</td>
+<td>Player 1</td>
+<td>1</td>
+<td>14</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>G1770783544585-550</td>
+<td>2026-02-11T04:20:01.889Z</td>
+<td>57.30</td>
+<td>Player 1</td>
+<td>20.38</td>
+<td>dark</td>
+<td>en</td>
+<td>CPU</td>
+<td>0</td>
+<td>14</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>G1770713913739-52</td>
+<td>2026-02-10T08:58:46.511Z</td>
+<td>12.77</td>
+<td>Player 3</td>
+<td>7.08</td>
+<td>light</td>
+<td>en</td>
+<td>Player 1</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="逐个动作数据" class="level2">
+<h2 class="anchored" data-anchor-id="逐个动作数据">逐个动作数据</h2>
+<div id="041ac31f" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>显示代码</summary>
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Display the first few rows of summary data</span></span>
+<span id="cb4-2">df_actions.head()</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="59">
 <div>
 
 
@@ -154,43 +274,49 @@ font-style: inherit;"># Display the first few rows of summary data</span></span>
 <th data-quarto-table-cell-role="th">Timestamp (ms)</th>
 <th data-quarto-table-cell-role="th">Player</th>
 <th data-quarto-table-cell-role="th">Action</th>
+<th data-quarto-table-cell-role="th">Details</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">0</th>
-<td>G1770703980208-940</td>
-<td>4001</td>
+<td>G1770783544585-550</td>
+<td>4000</td>
 <td>System</td>
 <td>Ball served towards CPU</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">1</th>
-<td>G1770703980208-940</td>
-<td>4814</td>
+<td>G1770783544585-550</td>
+<td>4919</td>
 <td>CPU</td>
 <td>Hit Ball</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">2</th>
-<td>G1770703980208-940</td>
-<td>6431</td>
+<td>G1770783544585-550</td>
+<td>6787</td>
 <td>Player 1</td>
 <td>Hit Ball</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">3</th>
-<td>G1770703980208-940</td>
-<td>8048</td>
+<td>G1770783544585-550</td>
+<td>8653</td>
 <td>CPU</td>
 <td>Hit Ball</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">4</th>
-<td>G1770703980208-940</td>
-<td>9732</td>
+<td>G1770783544585-550</td>
+<td>10519</td>
 <td>Player 1</td>
-<td>Lost Life. Remaining: 0</td>
+<td>Hit Ball</td>
+<td>NaN</td>
 </tr>
 </tbody>
 </table>
@@ -199,17 +325,17 @@ font-style: inherit;"># Display the first few rows of summary data</span></span>
 </div>
 </div>
 </section>
-<section id="逐场游戏数据" class="level2">
-<h2 class="anchored" data-anchor-id="逐场游戏数据">逐场游戏数据</h2>
-<div id="5cdb15db" class="cell" data-execution_count="3">
+<section id="时间序列数据" class="level2">
+<h2 class="anchored" data-anchor-id="时间序列数据">时间序列数据</h2>
+<div id="af308a02" class="cell" data-execution_count="4">
 <details class="code-fold">
-<summary>Show Code</summary>
-<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
+<summary>显示代码</summary>
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Display the first few rows of summary data</span></span>
-<span id="cb4-2">df_summary.head()</span></code></pre></div>
+<span id="cb5-2">df_telemetry.head()</span></code></pre></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="3">
+<div class="cell-output cell-output-display" data-execution_count="60">
 <div>
 
 
@@ -218,86 +344,153 @@ font-style: inherit;"># Display the first few rows of summary data</span></span>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
 <th data-quarto-table-cell-role="th">Game ID</th>
-<th data-quarto-table-cell-role="th">Date</th>
-<th data-quarto-table-cell-role="th">Duration (s)</th>
-<th data-quarto-table-cell-role="th">Winner</th>
+<th data-quarto-table-cell-role="th">Timestamp (ms)</th>
+<th data-quarto-table-cell-role="th">Ball X</th>
+<th data-quarto-table-cell-role="th">Ball Y</th>
+<th data-quarto-table-cell-role="th">Ball VX</th>
+<th data-quarto-table-cell-role="th">Ball VY</th>
 <th data-quarto-table-cell-role="th">Ball Speed</th>
-<th data-quarto-table-cell-role="th">Theme</th>
-<th data-quarto-table-cell-role="th">Language</th>
-<th data-quarto-table-cell-role="th">Player</th>
-<th data-quarto-table-cell-role="th">Lives</th>
-<th data-quarto-table-cell-role="th">Hits</th>
+<th data-quarto-table-cell-role="th">p1 X</th>
+<th data-quarto-table-cell-role="th">p1 Y</th>
+<th data-quarto-table-cell-role="th">p1 Center</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">p3 Center</th>
+<th data-quarto-table-cell-role="th">p3 Active</th>
+<th data-quarto-table-cell-role="th">p3 Lives</th>
+<th data-quarto-table-cell-role="th">p3 Distance</th>
+<th data-quarto-table-cell-role="th">p4 X</th>
+<th data-quarto-table-cell-role="th">p4 Y</th>
+<th data-quarto-table-cell-role="th">p4 Center</th>
+<th data-quarto-table-cell-role="th">p4 Active</th>
+<th data-quarto-table-cell-role="th">p4 Lives</th>
+<th data-quarto-table-cell-role="th">p4 Distance</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">0</th>
-<td>G1770703980208-940</td>
-<td>2026-02-10T06:13:19.507Z</td>
-<td>19.30</td>
-<td>CPU</td>
-<td>7.02</td>
-<td>light</td>
-<td>zh</td>
-<td>Player 1</td>
-<td>0</td>
-<td>1</td>
+<td>G1770793570881-726</td>
+<td>4011</td>
+<td>343.50</td>
+<td>349.77</td>
+<td>-6.496</td>
+<td>-0.2292</td>
+<td>6.5010</td>
+<td>20.0</td>
+<td>300.0</td>
+<td>350.0</td>
+<td>...</td>
+<td>350.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">1</th>
-<td>G1770703980208-940</td>
-<td>2026-02-10T06:13:19.507Z</td>
-<td>19.30</td>
-<td>CPU</td>
-<td>7.02</td>
-<td>light</td>
-<td>zh</td>
-<td>CPU</td>
-<td>1</td>
-<td>4</td>
+<td>G1770793570881-726</td>
+<td>4112</td>
+<td>304.53</td>
+<td>348.40</td>
+<td>-6.496</td>
+<td>-0.2292</td>
+<td>6.5073</td>
+<td>20.0</td>
+<td>300.0</td>
+<td>350.0</td>
+<td>...</td>
+<td>350.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">2</th>
-<td>G1770703980208-940</td>
-<td>2026-02-10T06:13:19.507Z</td>
-<td>19.30</td>
-<td>CPU</td>
-<td>7.02</td>
-<td>light</td>
-<td>zh</td>
-<td>Player 3</td>
-<td>0</td>
-<td>0</td>
+<td>G1770793570881-726</td>
+<td>4227</td>
+<td>259.06</td>
+<td>346.79</td>
+<td>-6.496</td>
+<td>-0.2292</td>
+<td>6.5146</td>
+<td>20.0</td>
+<td>300.0</td>
+<td>350.0</td>
+<td>...</td>
+<td>350.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">3</th>
-<td>G1770703980208-940</td>
-<td>2026-02-10T06:13:19.507Z</td>
-<td>19.30</td>
-<td>CPU</td>
-<td>7.02</td>
-<td>light</td>
-<td>zh</td>
-<td>Player 4</td>
-<td>0</td>
-<td>0</td>
+<td>G1770793570881-726</td>
+<td>4328</td>
+<td>220.08</td>
+<td>345.42</td>
+<td>-6.496</td>
+<td>-0.2292</td>
+<td>6.5208</td>
+<td>20.0</td>
+<td>300.0</td>
+<td>350.0</td>
+<td>...</td>
+<td>350.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">4</th>
-<td>G1770703089772-903</td>
-<td>2026-02-10T05:58:49.043Z</td>
-<td>39.27</td>
-<td>Tony</td>
-<td>13.30</td>
-<td>dark</td>
-<td>en</td>
-<td>Tony</td>
-<td>1</td>
-<td>11</td>
+<td>G1770793570881-726</td>
+<td>4428</td>
+<td>181.11</td>
+<td>344.04</td>
+<td>-6.496</td>
+<td>-0.2292</td>
+<td>6.5271</td>
+<td>20.0</td>
+<td>300.0</td>
+<td>350.0</td>
+<td>...</td>
+<td>350.0</td>
+<td>1.0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
 </tr>
 </tbody>
 </table>
 
+<p>5 rows × 31 columns</p>
 </div>
 </div>
 </div>
@@ -305,25 +498,21 @@ font-style: inherit;"># Display the first few rows of summary data</span></span>
 </section>
 <section id="第二步数据清洗" class="level1">
 <h1>第二步：数据清洗</h1>
-<p>我们将通过将时间戳转换为日期时间对象、处理数值类型并确保一致性来清洗数据。</p>
-<div id="a60e58e1" class="cell" data-execution_count="4">
+<p>我们将通过将时间戳转换为 datetime 对象、处理数值类型并确保一致性来清洗数据。</p>
+<div id="f660c008" class="cell" data-execution_count="5">
 <details class="code-fold">
-<summary>Show Code</summary>
-<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
+<summary>显示代码</summary>
+<div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># 1. Convert Date in summary to datetime</span></span>
-<span id="cb5-2">df_summary[<span class="st" style="color: #20794D;
+font-style: inherit;"># 清洗摘要数据</span></span>
+<span id="cb6-2">df_summary[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'Date'</span>] <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> pd.to_datetime(df_summary[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'Date'</span>])</span>
-<span id="cb5-3"></span>
-<span id="cb5-4"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># 2. Ensure numeric types for metrics</span></span>
-<span id="cb5-5">numeric_cols <span class="op" style="color: #5E5E5E;
+<span id="cb6-3">numeric_summary <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> [<span class="st" style="color: #20794D;
 background-color: null;
@@ -334,28 +523,27 @@ background-color: null;
 font-style: inherit;">'Lives'</span>, <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'Hits'</span>]</span>
-<span id="cb5-6"><span class="cf" style="color: #003B4F;
+<span id="cb6-4">df_summary[numeric_summary] <span class="op" style="color: #5E5E5E;
 background-color: null;
-font-weight: bold;
-font-style: inherit;">for</span> col <span class="kw" style="color: #003B4F;
+font-style: inherit;">=</span> df_summary[numeric_summary].<span class="bu" style="color: null;
 background-color: null;
-font-weight: bold;
-font-style: inherit;">in</span> numeric_cols:</span>
-<span id="cb5-7">    df_summary[col] <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> pd.to_numeric(df_summary[col], errors<span class="op" style="color: #5E5E5E;
+font-style: inherit;">apply</span>(pd.to_numeric, errors<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'coerce'</span>)</span>
-<span id="cb5-8"></span>
-<span id="cb5-9"><span class="co" style="color: #5E5E5E;
+<span id="cb6-5">df_summary <span class="op" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># 3. Handle Action data timestamps</span></span>
-<span id="cb5-10"><span class="co" style="color: #5E5E5E;
+font-style: inherit;">=</span> df_summary.dropna(subset<span class="op" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># Action timestamps are in ms (offset from game start)</span></span>
-<span id="cb5-11">df_actions[<span class="st" style="color: #20794D;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Player'</span>])</span>
+<span id="cb6-6"></span>
+<span id="cb6-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 清洗动作数据</span></span>
+<span id="cb6-8">df_actions[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'Timestamp (ms)'</span>] <span class="op" style="color: #5E5E5E;
 background-color: null;
@@ -366,55 +554,10 @@ background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'coerce'</span>)</span>
-<span id="cb5-12"></span>
-<span id="cb5-13"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># 4. Check for missing values</span></span>
-<span id="cb5-14">missing_counts <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> df_summary.isnull().<span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">sum</span>()</span>
-<span id="cb5-15"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">"Missing values in Summary data:"</span>)</span>
-<span id="cb5-16"><span class="bu" style="color: null;
-background-color: null;
-font-style: inherit;">print</span>(missing_counts)</span>
-<span id="cb5-17"></span>
-<span id="cb5-18"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Drop redundant rows if any (e.g. empty players if they didn't join)</span></span>
-<span id="cb5-19">df_summary <span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span> df_summary.dropna(subset<span class="op" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'Player'</span>])</span>
-<span id="cb5-20"></span>
-<span id="cb5-21"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Final head view after cleaning</span></span>
-<span id="cb5-22">df_summary.head()</span></code></pre></div>
+<span id="cb6-9"></span>
+<span id="cb6-10">df_summary.head()</span></code></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Missing values in Summary data:
-Game ID         0
-Date            0
-Duration (s)    0
-Winner          0
-Ball Speed      0
-Theme           0
-Language        0
-Player          0
-Lives           0
-Hits            0
-dtype: int64</code></pre>
-</div>
-<div class="cell-output cell-output-display" data-execution_count="4">
+<div class="cell-output cell-output-display" data-execution_count="61">
 <div>
 
 
@@ -432,73 +575,79 @@ dtype: int64</code></pre>
 <th data-quarto-table-cell-role="th">Player</th>
 <th data-quarto-table-cell-role="th">Lives</th>
 <th data-quarto-table-cell-role="th">Hits</th>
+<th data-quarto-table-cell-role="th">CPU Difficulty</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">0</th>
-<td>G1770703980208-940</td>
-<td>2026-02-10 06:13:19.507000+00:00</td>
-<td>19.30</td>
+<td>G1770713902861-393</td>
+<td>2026-02-10 08:58:27.879000+00:00</td>
+<td>5.02</td>
 <td>CPU</td>
-<td>7.02</td>
+<td>6.56</td>
 <td>light</td>
-<td>zh</td>
+<td>en</td>
 <td>Player 1</td>
 <td>0</td>
-<td>1</td>
+<td>0</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">1</th>
-<td>G1770703980208-940</td>
-<td>2026-02-10 06:13:19.507000+00:00</td>
-<td>19.30</td>
+<td>G1770713902861-393</td>
+<td>2026-02-10 08:58:27.879000+00:00</td>
+<td>5.02</td>
 <td>CPU</td>
-<td>7.02</td>
+<td>6.56</td>
 <td>light</td>
-<td>zh</td>
+<td>en</td>
 <td>CPU</td>
 <td>1</td>
-<td>4</td>
+<td>0</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">2</th>
-<td>G1770703980208-940</td>
-<td>2026-02-10 06:13:19.507000+00:00</td>
-<td>19.30</td>
-<td>CPU</td>
-<td>7.02</td>
-<td>light</td>
-<td>zh</td>
-<td>Player 3</td>
-<td>0</td>
-<td>0</td>
+<td>G1770783544585-550</td>
+<td>2026-02-11 04:20:01.889000+00:00</td>
+<td>57.30</td>
+<td>Player 1</td>
+<td>20.38</td>
+<td>dark</td>
+<td>en</td>
+<td>Player 1</td>
+<td>1</td>
+<td>14</td>
+<td>NaN</td>
 </tr>
 <tr class="even">
 <th data-quarto-table-cell-role="th">3</th>
-<td>G1770703980208-940</td>
-<td>2026-02-10 06:13:19.507000+00:00</td>
-<td>19.30</td>
+<td>G1770783544585-550</td>
+<td>2026-02-11 04:20:01.889000+00:00</td>
+<td>57.30</td>
+<td>Player 1</td>
+<td>20.38</td>
+<td>dark</td>
+<td>en</td>
 <td>CPU</td>
-<td>7.02</td>
-<td>light</td>
-<td>zh</td>
-<td>Player 4</td>
 <td>0</td>
-<td>0</td>
+<td>14</td>
+<td>NaN</td>
 </tr>
 <tr class="odd">
 <th data-quarto-table-cell-role="th">4</th>
-<td>G1770703089772-903</td>
-<td>2026-02-10 05:58:49.043000+00:00</td>
-<td>39.27</td>
-<td>Tony</td>
-<td>13.30</td>
-<td>dark</td>
+<td>G1770713913739-52</td>
+<td>2026-02-10 08:58:46.511000+00:00</td>
+<td>12.77</td>
+<td>Player 3</td>
+<td>7.08</td>
+<td>light</td>
 <td>en</td>
-<td>Tony</td>
-<td>1</td>
-<td>11</td>
+<td>Player 1</td>
+<td>0</td>
+<td>0</td>
+<td>NaN</td>
 </tr>
 </tbody>
 </table>
@@ -507,15 +656,14 @@ dtype: int64</code></pre>
 </div>
 </div>
 </section>
-<section id="第三步eda-与可视化" class="level1">
-<h1>第三步：EDA 与可视化</h1>
+<section id="第三步eda-和可视化" class="level1">
+<h1>第三步：EDA 和可视化</h1>
 <p>现在我们将查看一些关键绩效指标并可视化游戏结果。</p>
 <section id="获胜分布" class="level2">
 <h2 class="anchored" data-anchor-id="获胜分布">获胜分布</h2>
-<p>谁赢得了最多的比赛？</p>
-<div id="9758f264" class="cell" data-execution_count="5">
+<div id="199952b8" class="cell" data-execution_count="6">
 <details class="code-fold">
-<summary>Show Code</summary>
+<summary>显示代码</summary>
 <div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> seaborn <span class="im" style="color: #00769E;
@@ -530,50 +678,55 @@ font-style: inherit;">as</span> plt</span>
 <span id="cb7-4"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Set aesthetic style</span></span>
-<span id="cb7-5"><span class="co" style="color: #5E5E5E;
-background-color: null;
-font-style: inherit;"># Use 'Arial Unicode MS' on macOS to support Chinese characters</span></span>
-<span id="cb7-6">sns.set_theme(style<span class="op" style="color: #5E5E5E;
+<span id="cb7-5">sns.set_theme(style<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">"whitegrid"</span>, font<span class="op" style="color: #5E5E5E;
+font-style: inherit;">"whitegrid"</span>)</span>
+<span id="cb7-6">plt.rcParams[<span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">=</span><span class="st" style="color: #20794D;
+font-style: inherit;">'font.sans-serif'</span>] <span class="op" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;">"Arial Unicode MS"</span>)</span>
+font-style: inherit;">=</span> [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Arial Unicode MS'</span>]</span>
 <span id="cb7-7">plt.rcParams[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'axes.unicode_minus'</span>] <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="va" style="color: #111111;
 background-color: null;
-font-style: inherit;">False</span></span>
-<span id="cb7-8"></span>
-<span id="cb7-9"><span class="co" style="color: #5E5E5E;
+font-style: inherit;">False</span></span></code></pre></div>
+</details>
+</div>
+<p>谁赢得了最多的游戏？</p>
+<div id="5beecf77" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>显示代码</summary>
+<div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
-font-style: inherit;"># Count unique games per winner</span></span>
-<span id="cb7-10">unique_games <span class="op" style="color: #5E5E5E;
+font-style: inherit;"># 计算每位获胜者的独特游戏场次</span></span>
+<span id="cb8-2">unique_games <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> df_summary.drop_duplicates(subset<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'Game ID'</span>])</span>
-<span id="cb7-11">winner_counts <span class="op" style="color: #5E5E5E;
+<span id="cb8-3">winner_counts <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> unique_games[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'Winner'</span>].value_counts()</span>
-<span id="cb7-12"></span>
-<span id="cb7-13">plt.figure(figsize<span class="op" style="color: #5E5E5E;
+<span id="cb8-4"></span>
+<span id="cb8-5">plt.figure(figsize<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">10</span>, <span class="dv" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">6</span>))</span>
-<span id="cb7-14">sns.barplot(x<span class="op" style="color: #5E5E5E;
+font-style: inherit;">5</span>))</span>
+<span id="cb8-6">sns.barplot(x<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>winner_counts.index, y<span class="op" style="color: #5E5E5E;
 background-color: null;
@@ -582,25 +735,19 @@ background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"viridis"</span>)</span>
-<span id="cb7-15">plt.title(<span class="st" style="color: #20794D;
+<span id="cb8-7">plt.title(<span class="st" style="color: #20794D;
 background-color: null;
-font-style: inherit;">'Number of Wins by Player/CPU (获胜次数)'</span>, fontsize<span class="op" style="color: #5E5E5E;
+font-style: inherit;">'玩家/CPU 获胜场次分布'</span>, fontsize<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">15</span>)</span>
-<span id="cb7-16">plt.ylabel(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'Games Won (获胜局数)'</span>)</span>
-<span id="cb7-17">plt.xlabel(<span class="st" style="color: #20794D;
-background-color: null;
-font-style: inherit;">'Winner (获胜者)'</span>)</span>
-<span id="cb7-18">plt.show()</span></code></pre></div>
+font-style: inherit;">14</span>)</span>
+<span id="cb8-8">plt.show()</span></code></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/index_files/figure-html/cell-6-output-1.png" width="818" height="535" class="figure-img"></p>
+<p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/index_files/figure-html/cell-8-output-1.png" width="784" height="456" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -608,18 +755,18 @@ font-style: inherit;">'Winner (获胜者)'</span>)</span>
 </section>
 <section id="游戏时长-vs.-球速" class="level2">
 <h2 class="anchored" data-anchor-id="游戏时长-vs.-球速">游戏时长 vs.&nbsp;球速</h2>
-<p>更高的球速会导致游戏时间更短吗？</p>
-<div id="9ed2291c" class="cell" data-execution_count="6">
+<p>更高的球速会导致游戏时长变短吗？</p>
+<div id="3912fdd2" class="cell" data-execution_count="8">
 <details class="code-fold">
-<summary>Show Code</summary>
-<div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1">plt.figure(figsize<span class="op" style="color: #5E5E5E;
+<summary>显示代码</summary>
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1">plt.figure(figsize<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">10</span>, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">6</span>))</span>
-<span id="cb8-2">sns.scatterplot(data<span class="op" style="color: #5E5E5E;
+<span id="cb9-2">sns.scatterplot(data<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>unique_games, x<span class="op" style="color: #5E5E5E;
 background-color: null;
@@ -638,38 +785,38 @@ background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">100</span>)</span>
-<span id="cb8-3">plt.title(<span class="st" style="color: #20794D;
+<span id="cb9-3">plt.title(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'Game Duration vs Ball Speed'</span>, fontsize<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">15</span>)</span>
-<span id="cb8-4">plt.show()</span></code></pre></div>
+<span id="cb9-4">plt.show()</span></code></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/index_files/figure-html/cell-7-output-1.png" width="812" height="530" class="figure-img"></p>
+<p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/index_files/figure-html/cell-9-output-1.png" width="812" height="530" class="figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
 </section>
-<section id="每位玩家的总击球数" class="level2">
-<h2 class="anchored" data-anchor-id="每位玩家的总击球数">每位玩家的总击球数</h2>
-<p>追踪不同游戏会话中的技巧（击球数）。</p>
-<div id="9cc15f6b" class="cell" data-execution_count="7">
+<section id="每个玩家的总击球数" class="level2">
+<h2 class="anchored" data-anchor-id="每个玩家的总击球数">每个玩家的总击球数</h2>
+<p>跟踪不同游戏场次的技能（击球数）表现。</p>
+<div id="4805509c" class="cell" data-execution_count="9">
 <details class="code-fold">
-<summary>Show Code</summary>
-<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1">plt.figure(figsize<span class="op" style="color: #5E5E5E;
+<summary>显示代码</summary>
+<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1">plt.figure(figsize<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">12</span>, <span class="dv" style="color: #AD0000;
+font-style: inherit;">10</span>, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">6</span>))</span>
-<span id="cb9-2">sns.boxplot(data<span class="op" style="color: #5E5E5E;
+<span id="cb10-2">sns.boxplot(data<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>df_summary, x<span class="op" style="color: #5E5E5E;
 background-color: null;
@@ -684,19 +831,19 @@ background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"magma"</span>)</span>
-<span id="cb9-3">plt.title(<span class="st" style="color: #20794D;
+<span id="cb10-3">plt.title(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'Distribution of Hits per Player'</span>, fontsize<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">15</span>)</span>
-<span id="cb9-4">plt.show()</span></code></pre></div>
+<span id="cb10-4">plt.show()</span></code></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/index_files/figure-html/cell-8-output-1.png" width="961" height="531" class="figure-img"></p>
+<p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/index_files/figure-html/cell-10-output-1.png" width="812" height="531" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -705,25 +852,25 @@ font-style: inherit;">15</span>)</span>
 <section id="动作序列" class="level2">
 <h2 class="anchored" data-anchor-id="动作序列">动作序列</h2>
 <p>分析所有游戏中动作的频率。</p>
-<div id="0974ea81" class="cell" data-execution_count="8">
+<div id="d88c3321" class="cell" data-execution_count="10">
 <details class="code-fold">
-<summary>Show Code</summary>
-<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1">action_counts <span class="op" style="color: #5E5E5E;
+<summary>显示代码</summary>
+<div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb11-1">action_counts <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> df_actions[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'Action'</span>].value_counts().head(<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">10</span>)</span>
-<span id="cb10-2"></span>
-<span id="cb10-3">plt.figure(figsize<span class="op" style="color: #5E5E5E;
+<span id="cb11-2"></span>
+<span id="cb11-3">plt.figure(figsize<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">12</span>, <span class="dv" style="color: #AD0000;
+font-style: inherit;">8</span>, <span class="dv" style="color: #AD0000;
 background-color: null;
-font-style: inherit;">8</span>))</span>
-<span id="cb10-4">action_counts.plot(kind<span class="op" style="color: #5E5E5E;
+font-style: inherit;">7</span>))</span>
+<span id="cb11-4">action_counts.plot(kind<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
@@ -732,20 +879,291 @@ background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'skyblue'</span>)</span>
-<span id="cb10-5">plt.title(<span class="st" style="color: #20794D;
+<span id="cb11-5">plt.title(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'Most Frequent Actions/Events'</span>, fontsize<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">15</span>)</span>
-<span id="cb10-6">plt.gca().invert_yaxis()</span>
-<span id="cb10-7">plt.show()</span></code></pre></div>
+<span id="cb11-6">plt.gca().invert_yaxis()</span>
+<span id="cb11-7">plt.show()</span></code></pre></div>
 </details>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/index_files/figure-html/cell-9-output-1.png" width="1111" height="658" class="figure-img"></p>
+<p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/index_files/figure-html/cell-11-output-1.png" width="833" height="584" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="第四步遥测数据分析" class="level1">
+<h1>第四步：遥测数据分析</h1>
+<p>现在让我们分析高频遥测数据，该数据每 100 毫秒捕获一次球和球拍的位置。</p>
+<section id="随时间变化的球速" class="level2">
+<h2 class="anchored" data-anchor-id="随时间变化的球速">随时间变化的球速</h2>
+<p>球速在所有游戏中是如何演变的？</p>
+<div id="ab2640b6" class="cell" data-execution_count="11">
+<details class="code-fold">
+<summary>显示代码</summary>
+<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> df_telemetry.empty:</span>
+<span id="cb12-2">    plt.figure(figsize<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>))</span>
+<span id="cb12-3">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> gid <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> df_telemetry[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Game ID'</span>].unique()[:<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>]:</span>
+<span id="cb12-4">        df_g <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df_telemetry[df_telemetry[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Game ID'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> gid]</span>
+<span id="cb12-5">        plt.plot(df_g[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Timestamp (ms)'</span>]<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>, df_g[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Ball Speed'</span>], alpha<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.6</span>, label<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'游戏 </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>gid[<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>:]<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'</span>)</span>
+<span id="cb12-6">    </span>
+<span id="cb12-7">    plt.title(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'球速演变（前 10 场游戏）'</span>)</span>
+<span id="cb12-8">    plt.xlabel(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'时间 (秒)'</span>)</span>
+<span id="cb12-9">    plt.ylabel(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'速度'</span>)</span>
+<span id="cb12-10">    plt.legend(bbox_to_anchor<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1.05</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>), loc<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'upper left'</span>, fontsize<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">8</span>)</span>
+<span id="cb12-11">    plt.tight_layout()</span>
+<span id="cb12-12">    plt.show()</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/index_files/figure-html/cell-12-output-1.png" width="945" height="463" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="球轨迹热图" class="level2">
+<h2 class="anchored" data-anchor-id="球轨迹热图">球轨迹热图</h2>
+<p>球在场地的哪个位置停留时间最长？</p>
+<div id="a95d6008" class="cell" data-execution_count="12">
+<details class="code-fold">
+<summary>显示代码</summary>
+<div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> df_telemetry.empty:</span>
+<span id="cb13-2">    plt.figure(figsize<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>))</span>
+<span id="cb13-3">    plt.hist2d(df_telemetry[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Ball X'</span>], df_telemetry[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Ball Y'</span>], bins<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">50</span>, cmap<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'hot'</span>)</span>
+<span id="cb13-4">    plt.colorbar(label<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'采样点'</span>)</span>
+<span id="cb13-5">    plt.title(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'球轨迹热图'</span>)</span>
+<span id="cb13-6">    plt.show()</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/index_files/figure-html/cell-13-output-1.png" width="764" height="508" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="球拍移动分析" class="level2">
+<h2 class="anchored" data-anchor-id="球拍移动分析">球拍移动分析</h2>
+<p>哪些玩家移动球拍最频繁？</p>
+<div id="21fee610" class="cell" data-execution_count="13">
+<details class="code-fold">
+<summary>显示代码</summary>
+<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> df_telemetry.empty:</span>
+<span id="cb14-2">    dist_cols <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [c <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> c <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> df_telemetry.columns <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Distance'</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> c <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">and</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Ball'</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">not</span> <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> c]</span>
+<span id="cb14-3">    movement <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> []</span>
+<span id="cb14-4">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> gid <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> df_telemetry[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Game ID'</span>].unique():</span>
+<span id="cb14-5">        df_g <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df_telemetry[df_telemetry[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Game ID'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> gid]</span>
+<span id="cb14-6">        <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> col <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> dist_cols:</span>
+<span id="cb14-7">            movement.append({<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Player'</span>: col.split()[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>], <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Distance'</span>: df_g[col].<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>()})</span>
+<span id="cb14-8">    </span>
+<span id="cb14-9">    plt.figure(figsize<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>))</span>
+<span id="cb14-10">    sns.boxplot(data<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>pd.DataFrame(movement), x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Player'</span>, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Distance'</span>, palette<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'coolwarm'</span>)</span>
+<span id="cb14-11">    plt.title(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'各玩家球拍移动距离分布'</span>)</span>
+<span id="cb14-12">    plt.show()</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://jcwinning.github.io/LandingPage/posts/vibepong/index_files/figure-html/cell-14-output-1.png" width="829" height="454" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -759,8 +1177,8 @@ font-style: inherit;">15</span>)</span>
 
  ]]></description>
   <category>AI</category>
-  <category>Games</category>
-  <category>Data Analysis</category>
+  <category>游戏</category>
+  <category>数据分析</category>
   <guid>https://jcwinning.github.io/LandingPage/posts/vibepong/</guid>
   <pubDate>Mon, 09 Feb 2026 16:00:00 GMT</pubDate>
   <media:content url="https://jcwinning.github.io/LandingPage/posts/vibepong/images/my screenshots 3.png" medium="image" type="image/png" height="136" width="144"/>
@@ -11742,7 +12160,7 @@ font-style: inherit;">"ai_error_check_config"</span>))</span>
   <media:content url="https://jcwinning.github.io/LandingPage/posts/weight-tracking/images/0.png" medium="image" type="image/png" height="84" width="144"/>
 </item>
 <item>
-  <title>基于 RAG 的威士忌品鉴笔记</title>
+  <title>美酒评鉴Agent系统：基于酒评家RAG</title>
   <dc:creator>Tony D</dc:creator>
   <link>https://jcwinning.github.io/LandingPage/posts/whisky-tasting/</link>
   <description><![CDATA[ 
@@ -11856,7 +12274,7 @@ font-style: inherit;">1024</span>]</span>
 </section>
 <section id="数据采集流程" class="level3">
 <h3 class="anchored" data-anchor-id="数据采集流程">数据采集流程</h3>
-<div id="be223295" class="cell" data-execution_count="1">
+<div id="4d2650a3" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
@@ -11982,7 +12400,7 @@ font-style: inherit;">return</span> all_reviews</span></code></pre></div></div>
 <section id="嵌入流程" class="level4">
 <h4 class="anchored" data-anchor-id="嵌入流程">嵌入流程</h4>
 <p>该应用使用 BGE-Large-ZH-v1.5 模型生成嵌入向量：</p>
-<div id="221c4646" class="cell" data-execution_count="2">
+<div id="bae349e0" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><span class="kw" style="color: #003B4F;
@@ -12095,7 +12513,7 @@ flowchart TD
 </section>
 <section id="相似度搜索实现" class="level3">
 <h3 class="anchored" data-anchor-id="相似度搜索实现">相似度搜索实现</h3>
-<div id="8be53adf" class="cell" data-execution_count="3">
+<div id="de066a17" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><span class="kw" style="color: #003B4F;
@@ -12235,7 +12653,7 @@ font-style: inherit;">return</span> []</span></code></pre></div></div>
 <h2 class="anchored" data-anchor-id="专门-agent-的实现">专门 Agent 的实现</h2>
 <section id="drunktony-中文-agent" class="level3">
 <h3 class="anchored" data-anchor-id="drunktony-中文-agent">DrunkTony (中文 Agent)</h3>
-<div id="78e9c8b2" class="cell" data-execution_count="4">
+<div id="b1e12845" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="kw" style="color: #003B4F;
@@ -12399,7 +12817,7 @@ font-style: inherit;">0</span>].message.content</span></code></pre></div></div>
 </section>
 <section id="whiskyfunny-英文-agent" class="level3">
 <h3 class="anchored" data-anchor-id="whiskyfunny-英文-agent">WhiskyFunny (英文 Agent)</h3>
-<div id="d7aa02cd" class="cell" data-execution_count="5">
+<div id="7891c3fb" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="kw" style="color: #003B4F;
@@ -12562,7 +12980,7 @@ font-style: inherit;">0</span>].message.content</span></code></pre></div></div>
 <section id="双-llm-推荐系统" class="level3">
 <h3 class="anchored" data-anchor-id="双-llm-推荐系统">双 LLM 推荐系统</h3>
 <p>应用使用一个独立的 LLM 来生成威士忌推荐建议：</p>
-<div id="d60e91fb" class="cell" data-execution_count="6">
+<div id="9431b39f" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><span class="kw" style="color: #003B4F;
@@ -12673,7 +13091,7 @@ font-style: inherit;">0</span>].message.content</span></code></pre></div></div>
 <h2 class="anchored" data-anchor-id="用户界面设计">用户界面设计</h2>
 <section id="streamlit-实现" class="level3">
 <h3 class="anchored" data-anchor-id="streamlit-实现">Streamlit 实现</h3>
-<div id="63277e57" class="cell" data-execution_count="7">
+<div id="bc60f3bb" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><span class="co" style="color: #5E5E5E;
@@ -12876,7 +13294,7 @@ font-style: inherit;">"### 🎯 个性化推荐"</span>)</span>
 <h2 class="anchored" data-anchor-id="频率限制与成本管理">频率限制与成本管理</h2>
 <section id="api-使用控制" class="level3">
 <h3 class="anchored" data-anchor-id="api-使用控制">API 使用控制</h3>
-<div id="b9345ef8" class="cell" data-execution_count="8">
+<div id="aac94e55" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="co" style="color: #5E5E5E;
@@ -13065,7 +13483,7 @@ font-style: inherit;">True</span>}</span></code></pre></div></div>
 <h2 class="anchored" data-anchor-id="性能优化">性能优化</h2>
 <section id="向量数据库性能" class="level3">
 <h3 class="anchored" data-anchor-id="向量数据库性能">向量数据库性能</h3>
-<div id="463c1b95" class="cell" data-execution_count="9">
+<div id="7555d103" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><span class="co" style="color: #5E5E5E;
@@ -13261,7 +13679,7 @@ font-style: inherit;">"</span></span></code></pre></div></div>
 </section>
 <section id="shiny-for-python-备选方案" class="level3">
 <h3 class="anchored" data-anchor-id="shiny-for-python-备选方案">Shiny for Python 备选方案</h3>
-<div id="b6a00a34" class="cell" data-execution_count="10">
+<div id="7ed9edbf" class="cell" data-execution_count="10">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="co" style="color: #5E5E5E;

@@ -1,0 +1,4 @@
+Game ID,Timestamp (ms),Player,Action
+"G1770713902861-393","4001","System","Ball served towards Player 1"
+"G1770713902861-393","5017","Player 1","Lost Life. Remaining: 0"
+"G1770713902861-393","5018","Player 1","Eliminated"
