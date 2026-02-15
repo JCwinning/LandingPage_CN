@@ -10,7 +10,118 @@
 <atom:link href="https://jcwinning.github.io/LandingPage/index.xml" rel="self" type="application/rss+xml"/>
 <description>由 Quarto 构建的 AI 博客</description>
 <generator>quarto-1.8.27</generator>
-<lastBuildDate>Mon, 09 Feb 2026 16:00:00 GMT</lastBuildDate>
+<lastBuildDate>Fri, 13 Feb 2026 16:00:00 GMT</lastBuildDate>
+<item>
+  <title>爱情专属AI Agent</title>
+  <dc:creator>Tony D</dc:creator>
+  <link>https://jcwinning.github.io/LandingPage/posts/love_agent/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<section id="这个情人节" class="level1">
+<h1>💝 这个情人节</h1>
+<p>给你心爱的人一个独特的礼物——一个个性化的 AI Agent，用来记录你们的爱情故事。</p>
+<p><img src="https://jcwinning.github.io/LandingPage/posts/love_agent/images/my screenshots 1.png" class="img-fluid" width="500"></p>
+</section>
+<section id="照片画廊" class="level1">
+<h1>📸 <strong>照片画廊</strong></h1>
+<p>随时随地导出珍贵照片。智能分类，一键导出。</p>
+<p><img src="https://jcwinning.github.io/LandingPage/posts/love_agent/images/my screenshots 2.png" class="img-fluid" width="500"></p>
+</section>
+<section id="我们的回忆" class="level1">
+<h1><strong>我们的回忆</strong></h1>
+<p>添加你们独特的爱情回忆，捕捉每一个甜蜜时刻。</p>
+<p><img src="https://jcwinning.github.io/LandingPage/posts/love_agent/images/my screenshots 3.png" class="img-fluid" width="500"></p>
+</section>
+<section id="ai-模型" class="level1">
+<h1>🤖 <strong>AI 模型</strong></h1>
+<p>在最新的 AI 模型之间切换，包括 GLM-5、Kimi K2.5、Minimax-m2.5。</p>
+<p><img src="https://jcwinning.github.io/LandingPage/posts/love_agent/images/my screenshots 4.png" class="img-fluid" width="500"></p>
+</section>
+<section id="技术栈" class="level1">
+<h1>技术栈</h1>
+<p>Python / LangGraph / OpenAI SDK / Streamlit</p>
+</section>
+<section id="ai-agent-流程" class="level1">
+<h1>AI Agent 流程</h1>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph TD
+    %% Entry Point
+    Start((User Access)) --&gt; Login{Login Page}
+    Login -- Wrong Key --&gt; Login
+    Login -- Correct Key --&gt; Session[Init Session State]
+
+    %% Navigation
+    Session --&gt; Tabs{Tab Selection}
+    
+    %% Chat Flow
+    Tabs -- "💬 问答 (Chat)" --&gt; Chat[Chat Interface]
+    Chat --&gt; UserInput[User enters Query]
+    UserInput --&gt; RunAgent[run_agent Logic]
+    
+    subgraph "Agent Workflow"
+        RunAgent --&gt; LoadData[Load Context]
+        LoadData --&gt; Story[Read story.md]
+        LoadData --&gt; Excel[Read data.xlsx Metadata]
+        LoadData --&gt; MemDB[Fetch Supabase Memory]
+        
+        Story &amp; Excel &amp; MemDB --&gt; Prompt[Construct System Prompt]
+        Prompt --&gt; LLM[Call LLM - OpenAI/OpenRouter]
+        LLM --&gt; Response[Generate Response with Image Paths]
+    end
+    
+    Response --&gt; UIProcess[UI Processing]
+    UIProcess --&gt; Regex[Extract image/xxx.jpeg paths]
+    Regex --&gt; Strip[Remove paths from display text]
+    Strip --&gt; Render[Render Markdown + Image Gallery]
+    
+    %% Memory Flow
+    Tabs -- "📝 记忆 (Memory)" --&gt; MemPage[Edit Plans/Stories]
+    MemPage --&gt; SaveMem[Save to Supabase]
+    SaveMem --&gt; Session
+
+    %% Settings Flow
+    Tabs -- "⚙️ 设置 (Settings)" --&gt; Config[Model Configuration]
+    Config --&gt; ModelSelect[Update Provider/Model]
+    ModelSelect --&gt; Session
+
+    %% Data Sources
+    subgraph "External Sources"
+        Supa[(Supabase Cloud)]
+        Local[(story.md / data.xlsx)]
+        Images[/image folder/]
+    end
+
+    MemDB -.-&gt; Supa
+    SaveMem -.-&gt; Supa
+    Story &amp; Excel -.-&gt; Local
+    Render -.-&gt; Images
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+
+
+<!-- -->
+
+</section>
+
+ ]]></description>
+  <category>AI</category>
+  <category>love</category>
+  <guid>https://jcwinning.github.io/LandingPage/posts/love_agent/</guid>
+  <pubDate>Fri, 13 Feb 2026 16:00:00 GMT</pubDate>
+  <media:content url="https://jcwinning.github.io/LandingPage/posts/love_agent/images/cover.png" medium="image" type="image/png" height="112" width="144"/>
+</item>
 <item>
   <title>Vibe 游戏： 4人乒乓球与游戏数据分析</title>
   <dc:creator>Tony D</dc:creator>
